@@ -83,14 +83,7 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background-color: #f8fafc; /* Ini warna abu-abu kebiruan muda, lu bisa ganti kode hex-nya */
-}
-  /* background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb)); */
+  background-color: #f8fafc;
 }
 
 a {
