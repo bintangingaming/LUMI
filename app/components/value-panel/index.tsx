@@ -4,7 +4,7 @@ import React from 'react'
 import cn from 'classnames'
 import { useTranslation } from 'react-i18next'
 import s from './style.module.css'
-import { StarIcon } from '@/app/components//welcome/massive-component'
+import { StarIcon } from '@/app/components/welcome/massive-component'
 import Button from '@/app/components/base/button'
 
 export interface ITemplateVarPanelProps {
@@ -21,16 +21,23 @@ const TemplateVarPanel: FC<ITemplateVarPanelProps> = ({
   isFold,
 }) => {
   return (
-    <div className={cn(isFold ? 'border border-indigo-100' : s.boxShodow, className, 'rounded-xl ')}>
+    <div className={cn(
+      isFold ? 'border border-slate-700/60' : s.boxShodow,
+      className,
+      'rounded-xl bg-slate-900/70 backdrop-blur-xl text-slate-100 shadow-2xl'
+    )}>
       {/* header */}
       <div
-        className={cn(isFold && 'rounded-b-xl', 'rounded-t-xl px-6 py-4 bg-indigo-25 text-xs')}
+        className={cn(
+          isFold && 'rounded-b-xl',
+          'rounded-t-xl px-6 py-4 bg-slate-800/40 text-xs border-b border-slate-800/80'
+        )}
       >
         {header}
       </div>
       {/* body */}
       {!isFold && children && (
-        <div className='rounded-b-xl p-6'>
+        <div className='rounded-b-xl p-6 bg-transparent'>
           {children}
         </div>
       )}
@@ -43,9 +50,9 @@ export const PanelTitle: FC<{ title: string, className?: string }> = ({
   className,
 }) => {
   return (
-    <div className={cn(className, 'flex items-center space-x-1 text-indigo-600')}>
+    <div className={cn(className, 'flex items-center space-x-1 text-indigo-400 font-medium')}>
       <StarIcon />
-      <span className='text-xs'>{title}</span>
+      <span className='text-xs text-slate-200'>{title}</span>
     </div>
   )
 }
@@ -67,12 +74,12 @@ export const VarOpBtnGroup: FC<{ className?: string, onConfirm: () => void, onCa
         {t('common.operation.save')}
       </Button>
       <Button
-        className='text-sm'
+        className='text-sm bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
         onClick={onCancel}
       >
         {t('common.operation.cancel')}
       </Button>
-    </div >
+    </div>
   )
 }
 
