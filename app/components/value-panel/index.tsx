@@ -73,12 +73,12 @@ export const VarOpBtnGroup: FC<{ className?: string, onConfirm: () => void, onCa
       >
         {t('common.operation.save')}
       </Button>
-      <Button
-        className="text-sm bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
-        onClick={onCancel}
-      >
-        {t('common.operation.cancel')}
-      </Button>
+  <Button
+  className="text-sm bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
+  onClick={onCancel}
+>
+  {t('common.operation.cancel')}
+</Button>
     </div>
   )
 }
