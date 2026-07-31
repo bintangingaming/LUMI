@@ -652,15 +652,15 @@ const Main: FC<IMainProps> = () => {
 
   if (!APP_ID || !APP_INFO || !promptConfig) { return <Loading type='app' /> }
 
-  return (
-    <div className='bg-gray-100'>
+ return (
+    <div className='bg-slate-950 text-slate-100 min-h-screen'>
       <Header
         title={APP_INFO.title}
         isMobile={isMobile}
         onShowSideBar={showSidebar}
         onCreateNewChat={() => handleConversationIdChange('-1')}
       />
-      <div className="flex rounded-t-2xl bg-transparent overflow-hidden">
+      <div className="flex rounded-t-2xl bg-slate-900 overflow-hidden border border-slate-800">
         {/* sidebar */}
         {!isMobile && renderSidebar()}
         {isMobile && isShowSidebar && (
