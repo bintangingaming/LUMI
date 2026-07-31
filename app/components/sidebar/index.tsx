@@ -32,20 +32,20 @@ const Sidebar: FC<ISidebarProps> = ({
   const { t } = useTranslation()
   return (
     <div
-      className="shrink-0 flex flex-col overflow-y-auto bg-white pc:w-[244px] tablet:w-[192px] mobile:w-[240px]  border-r border-gray-200 tablet:h-[calc(100vh_-_3rem)] mobile:h-screen"
+      className="shrink-0 flex flex-col overflow-y-auto bg-slate-900 pc:w-[244px] tablet:w-[192px] mobile:w-[240px]  border-r border-slate-800 tablet:h-[calc(100vh_-_3rem)] mobile:h-screen"
     >
       {list.length < MAX_CONVERSATION_LENTH && (
         <div className="flex flex-shrink-0 p-4 !pb-0">
           <Button
             onClick={() => { onCurrentIdChange('-1') }}
-            className="group block w-full flex-shrink-0 !justify-start !h-9 text-primary-600 items-center text-sm"
+            className="group block w-full flex-shrink-0 !justify-start !h-9 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 items-center text-sm"
           >
             <PencilSquareIcon className="mr-2 h-4 w-4" /> {t('app.chat.newChat')}
           </Button>
         </div>
       )}
 
-      <nav className="mt-4 flex-1 space-y-1 bg-white p-4 !pt-0">
+      <nav className="mt-4 flex-1 space-y-1 bg-transparent p-4 !pt-0">
         {list.map((item) => {
           const isCurrent = item.id === currentId
           const ItemIcon
@@ -56,22 +56,23 @@ const Sidebar: FC<ISidebarProps> = ({
               key={item.id}
               className={classNames(
                 isCurrent
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-700',
+                  ? 'bg-slate-800 text-indigo-400'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200',
                 'group flex items-center rounded-md px-2 py-2 text-sm font-medium cursor-pointer',
               )}
             >
               <ItemIcon
                 className={classNames(
                   isCurrent
-                    ? 'text-primary-600'
-                    : 'text-gray-400 group-hover:text-gray-500',
+                    ? 'text-indigo-400'
+                    : 'text-slate-500 group-hover:text-slate-300',
                   'mr-3 h-5 w-5 flex-shrink-0',
                 )}
                 aria-hidden="true"
               />
               {item.name}
             </div>
+          </div>
           )
         })}
       </nav>
@@ -79,7 +80,7 @@ const Sidebar: FC<ISidebarProps> = ({
         <Card><div className="flex flex-row items-center"><ChatBubbleOvalLeftEllipsisSolidIcon className="text-primary-600 h-6 w-6 mr-2" /><span>LangGenius</span></div></Card>
       </a> */}
       <div className="flex flex-shrink-0 pr-4 pb-4 pl-4">
-        <div className="text-gray-400 font-normal text-xs">© {copyRight} {(new Date()).getFullYear()}</div>
+        <div className="text-slate-500 font-normal text-xs">© {copyRight} {(new Date()).getFullYear()}</div>
       </div>
     </div>
   )
