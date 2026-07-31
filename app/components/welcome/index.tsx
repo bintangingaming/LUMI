@@ -51,6 +51,7 @@ const Welcome: FC<IWelcomeProps> = ({
     }
     return res
   })())
+
   useEffect(() => {
     if (!savedInputs) {
       const res: Record<string, any> = {}
@@ -69,7 +70,7 @@ const Welcome: FC<IWelcomeProps> = ({
   const highLightPromoptTemplate = (() => {
     if (!promptConfig) { return '' }
     const res = promptConfig.prompt_template.replace(regex, (match, p1) => {
-      return `<span class='text-gray-800 font-bold'>${inputs?.[p1] ? inputs?.[p1] : match}</span>`
+      return `<span class='text-indigo-400 font-bold'>${inputs?.[p1] ? inputs?.[p1] : match}</span>`
     })
     return res
   })()
@@ -81,90 +82,92 @@ const Welcome: FC<IWelcomeProps> = ({
 
   const renderHeader = () => {
     return (
-      <div className='absolute top-0 left-0 right-0 flex items-center justify-between border-b border-slate-800 mobile:h-12 tablet:h-16 px-8 bg-slate-900'>
-        <div className='text-slate-100'>{conversationName}</div>
+      <div className='absolute top-0 left-0 right-0 flex items-center justify-between border-b border-slate-800/80 mobile:h-12 tablet:h-16 px-8 bg-slate-900/90 backdrop-blur-md z-20'>
+        <div className='text-slate-100 font-medium text-base'>{conversationName}</div>
       </div>
     )
   }
 
   const renderInputs = () => {
     return (
-      <div className='space-y-3'>
+      <div className='space-y-4'>
         {promptConfig.prompt_variables.map(item => (
           <div className='tablet:flex items-start mobile:space-y-2 tablet:space-y-0 mobile:text-xs tablet:text-sm' key={item.key}>
-            <label className={`flex-shrink-0 flex items-center tablet:leading-9 text-slate-200 mobile:font-medium pc:font-normal ${s.formLabel}`}>{item.name}</label>
-            {item.type === 'select'
-              && (
-                <Select
-                  className='w-full text-gray-900'
-                  defaultValue={inputs?.[item.key]}
-                  onSelect={(i) => { setInputs({ ...inputs, [item.key]: i.value }) }}
-                  items={(item.options || []).map(i => ({ name: i, value: i }))}
-                  allowSearch={false}
-                  bgClassName='bg-gray-50'
-                />
-              )}
+            <label className={`flex-shrink-0 flex items-center tablet:leading-9 text-slate-200 mobile:font-medium pc:font-normal pr-4 ${s.formLabel}`}>
+              {item.name}
+            </label>
+
+            {item.type === 'select' && (
+              <Select
+                className='w-full text-slate-100'
+                defaultValue={inputs?.[item.key]}
+                onSelect={(i) => { setInputs({ ...inputs, [item.key]: i.value }) }}
+                items={(item.options || []).map(i => ({ name: i, value: i }))}
+                allowSearch={false}
+                bgClassName='bg-slate-800 border-slate-700 text-slate-100'
+              />
+            )}
+
             {item.type === 'string' && (
               <input
-                placeholder={`${item.name}${!item.required ? `(${t('app.variableTable.optional')})` : ''}`}
+                placeholder={`${item.name}${!item.required ? ` (${t('app.variableTable.optional')})` : ''}`}
                 value={inputs?.[item.key] || ''}
                 onChange={(e) => { setInputs({ ...inputs, [item.key]: e.target.value }) }}
-                className={'w-full flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50 text-gray-900'}
+                className='w-full flex-grow py-2 px-3.5 box-border rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all text-sm'
                 maxLength={item.max_length || DEFAULT_VALUE_MAX_LEN}
               />
             )}
+
             {item.type === 'paragraph' && (
               <textarea
-                className="w-full h-[104px] flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50 text-gray-900"
-                placeholder={`${item.name}${!item.required ? `(${t('app.variableTable.optional')})` : ''}`}
+                className='w-full h-[104px] flex-grow py-2 px-3.5 box-border rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all text-sm resize-none'
+                placeholder={`${item.name}${!item.required ? ` (${t('app.variableTable.optional')})` : ''}`}
                 value={inputs?.[item.key] || ''}
                 onChange={(e) => { setInputs({ ...inputs, [item.key]: e.target.value }) }}
               />
             )}
+
             {item.type === 'number' && (
               <input
                 type="number"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500"
-                placeholder={`${item.name}${!item.required ? `(${t('appDebug.variableTable.optional')})` : ''}`}
-                value={inputs[item.key]}
+                className='w-full flex-grow py-2 px-3.5 box-border rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all text-sm'
+                placeholder={`${item.name}${!item.required ? ` (${t('appDebug.variableTable.optional')})` : ''}`}
+                value={inputs[item.key] || ''}
                 onChange={(e) => { onInputsChange({ ...inputs, [item.key]: e.target.value }) }}
               />
             )}
 
-            {
-              item.type === 'file' && (
-                <FileUploaderInAttachmentWrapper
-                  fileConfig={{
-                    allowed_file_types: item.allowed_file_types,
-                    allowed_file_extensions: item.allowed_file_extensions,
-                    allowed_file_upload_methods: item.allowed_file_upload_methods!,
-                    number_limits: 1,
-                    fileUploadConfig: {} as any,
-                  }}
-                  onChange={(files) => {
-                    setInputs({ ...inputs, [item.key]: files[0] })
-                  }}
-                  value={inputs?.[item.key] || []}
-                />
-              )
-            }
-            {
-              item.type === 'file-list' && (
-                <FileUploaderInAttachmentWrapper
-                  fileConfig={{
-                    allowed_file_types: item.allowed_file_types,
-                    allowed_file_extensions: item.allowed_file_extensions,
-                    allowed_file_upload_methods: item.allowed_file_upload_methods!,
-                    number_limits: item.max_length,
-                    fileUploadConfig: {} as any,
-                  }}
-                  onChange={(files) => {
-                    setInputs({ ...inputs, [item.key]: files })
-                  }}
-                  value={inputs?.[item.key] || []}
-                />
-              )
-            }
+            {item.type === 'file' && (
+              <FileUploaderInAttachmentWrapper
+                fileConfig={{
+                  allowed_file_types: item.allowed_file_types,
+                  allowed_file_extensions: item.allowed_file_extensions,
+                  allowed_file_upload_methods: item.allowed_file_upload_methods!,
+                  number_limits: 1,
+                  fileUploadConfig: {} as any,
+                }}
+                onChange={(files) => {
+                  setInputs({ ...inputs, [item.key]: files[0] })
+                }}
+                value={inputs?.[item.key] || []}
+              />
+            )}
+
+            {item.type === 'file-list' && (
+              <FileUploaderInAttachmentWrapper
+                fileConfig={{
+                  allowed_file_types: item.allowed_file_types,
+                  allowed_file_extensions: item.allowed_file_extensions,
+                  allowed_file_upload_methods: item.allowed_file_upload_methods!,
+                  number_limits: item.max_length,
+                  fileUploadConfig: {} as any,
+                }}
+                onChange={(files) => {
+                  setInputs({ ...inputs, [item.key]: files })
+                }}
+                value={inputs?.[item.key] || []}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -196,12 +199,13 @@ const Welcome: FC<IWelcomeProps> = ({
   const handleChat = () => {
     if (!canChat()) { return }
 
-    Object.keys(inputs).forEach((key) => {
-      if (!inputs[key])
-        delete inputs[key]
+    const cleanInputs = { ...inputs }
+    Object.keys(cleanInputs).forEach((key) => {
+      if (!cleanInputs[key])
+        delete cleanInputs[key]
     })
 
-    onStartChat(inputs)
+    onStartChat(cleanInputs)
   }
 
   const renderNoVarPanel = () => {
@@ -226,7 +230,7 @@ const Welcome: FC<IWelcomeProps> = ({
         </div>
       )
     }
-    // private version
+
     return (
       <TemplateVarPanel
         isFold={false}
@@ -249,7 +253,7 @@ const Welcome: FC<IWelcomeProps> = ({
       >
         {renderInputs()}
         <ChatBtn
-          className='mt-3 mobile:ml-0 tablet:ml-[128px]'
+          className='mt-5 mobile:ml-0 tablet:ml-[128px]'
           onClick={handleChat}
         />
       </TemplateVarPanel>
@@ -302,8 +306,8 @@ const Welcome: FC<IWelcomeProps> = ({
             />
             <PromptTemplate html={highLightPromoptTemplate} />
             {isFold && (
-              <div className='flex items-center justify-between mt-3 border-t border-indigo-100 pt-4 text-xs text-indigo-600'>
-                <span className='text-gray-700'>{t('app.chat.configStatusDes')}</span>
+              <div className='flex items-center justify-between mt-3 border-t border-slate-700/80 pt-4 text-xs text-indigo-400'>
+                <span className='text-slate-300'>{t('app.chat.configStatusDes')}</span>
                 <EditBtn onClick={() => setIsFold(false)} />
               </div>
             )}
@@ -323,7 +327,7 @@ const Welcome: FC<IWelcomeProps> = ({
       <TemplateVarPanel
         isFold={isFold}
         header={
-          <div className='flex items-center justify-between text-indigo-600'>
+          <div className='flex items-center justify-between text-indigo-400'>
             <PanelTitle
               title={!isFold ? t('app.chat.privatePromptConfigTitle') : t('app.chat.configStatusDes')}
             />
@@ -343,58 +347,55 @@ const Welcome: FC<IWelcomeProps> = ({
     if ((!isPublicVersion && !canEditInputs) || !hasVar) { return null }
 
     return (
-      <div
-        className='pt-[88px] mb-5'
-      >
+      <div className='pt-[88px] mb-5'>
         {isPublicVersion ? renderHasSetInputsPublic() : renderHasSetInputsPrivate()}
-      </div>)
+      </div>
+    )
   }
 
   return (
-    <div className='relative mobile:min-h-[48px] tablet:min-h-[64px]'>
+    <div className='relative mobile:min-h-[48px] tablet:min-h-[64px] text-slate-100'>
       {hasSetInputs && renderHeader()}
       <div className='mx-auto pc:w-[794px] max-w-full mobile:w-full px-3.5'>
-        {/* Has't set inputs  */}
-        {
-          !hasSetInputs && (
-            <div className='mobile:pt-[72px] tablet:pt-[128px] pc:pt-[200px]'>
-              {hasVar
-                ? (
-                  renderVarPanel()
-                )
-                : (
-                  renderNoVarPanel()
-                )}
-            </div>
-          )
-        }
+        {!hasSetInputs && (
+          <div className='mobile:pt-[72px] tablet:pt-[128px] pc:pt-[200px]'>
+            {hasVar ? renderVarPanel() : renderNoVarPanel()}
+          </div>
+        )}
 
-        {/* Has set inputs */}
         {hasSetInputs && renderHasSetInputs()}
 
-        {/* foot */}
         {!hasSetInputs && (
           <div className='mt-4 flex justify-between items-center h-8 text-xs text-slate-400'>
-
-            {siteInfo.privacy_policy
-              ? <div>{t('app.chat.privacyPolicyLeft')}
+            {siteInfo.privacy_policy ? (
+              <div>
+                {t('app.chat.privacyPolicyLeft')}
                 <a
-                  className='text-slate-300'
+                  className='text-slate-300 hover:underline ml-1'
                   href={siteInfo.privacy_policy}
                   target='_blank'
-                >{t('app.chat.privacyPolicyMiddle')}</a>
+                  rel="noreferrer"
+                >
+                  {t('app.chat.privacyPolicyMiddle')}
+                </a>
                 {t('app.chat.privacyPolicyRight')}
               </div>
-              : <div>
-              </div>}
-            <a className='flex items-center pr-3 space-x-3 text-slate-400' href="https://dify.ai/" target="_blank">
+            ) : (
+              <div></div>
+            )}
+            <a 
+              className='flex items-center pr-3 space-x-3 text-slate-400 hover:text-slate-200 transition-colors' 
+              href="https://dify.ai/" 
+              target="_blank"
+              rel="noreferrer"
+            >
               <span className='uppercase'>{t('app.chat.powerBy')}</span>
               <FootLogo />
             </a>
           </div>
         )}
       </div>
-    </div >
+    </div>
   )
 }
 
