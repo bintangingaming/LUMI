@@ -81,8 +81,8 @@ const Welcome: FC<IWelcomeProps> = ({
 
   const renderHeader = () => {
     return (
-      <div className='absolute top-0 left-0 right-0 flex items-center justify-between border-b border-gray-100 mobile:h-12 tablet:h-16 px-8 bg-white'>
-        <div className='text-gray-900'>{conversationName}</div>
+      <div className='absolute top-0 left-0 right-0 flex items-center justify-between border-b border-slate-800 mobile:h-12 tablet:h-16 px-8 bg-slate-900'>
+        <div className='text-slate-100'>{conversationName}</div>
       </div>
     )
   }
@@ -92,11 +92,11 @@ const Welcome: FC<IWelcomeProps> = ({
       <div className='space-y-3'>
         {promptConfig.prompt_variables.map(item => (
           <div className='tablet:flex items-start mobile:space-y-2 tablet:space-y-0 mobile:text-xs tablet:text-sm' key={item.key}>
-            <label className={`flex-shrink-0 flex items-center tablet:leading-9 mobile:text-gray-700 tablet:text-gray-900 mobile:font-medium pc:font-normal ${s.formLabel}`}>{item.name}</label>
+            <label className={`flex-shrink-0 flex items-center tablet:leading-9 text-gray-800 mobile:font-medium pc:font-normal ${s.formLabel}`}>{item.name}</label>
             {item.type === 'select'
               && (
                 <Select
-                  className='w-full'
+                  className='w-full text-gray-900'
                   defaultValue={inputs?.[item.key]}
                   onSelect={(i) => { setInputs({ ...inputs, [item.key]: i.value }) }}
                   items={(item.options || []).map(i => ({ name: i, value: i }))}
@@ -109,13 +109,13 @@ const Welcome: FC<IWelcomeProps> = ({
                 placeholder={`${item.name}${!item.required ? `(${t('app.variableTable.optional')})` : ''}`}
                 value={inputs?.[item.key] || ''}
                 onChange={(e) => { setInputs({ ...inputs, [item.key]: e.target.value }) }}
-                className={'w-full flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50'}
+                className={'w-full flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50 text-gray-900'}
                 maxLength={item.max_length || DEFAULT_VALUE_MAX_LEN}
               />
             )}
             {item.type === 'paragraph' && (
               <textarea
-                className="w-full h-[104px] flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50"
+                className="w-full h-[104px] flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50 text-gray-900"
                 placeholder={`${item.name}${!item.required ? `(${t('app.variableTable.optional')})` : ''}`}
                 value={inputs?.[item.key] || ''}
                 onChange={(e) => { setInputs({ ...inputs, [item.key]: e.target.value }) }}
@@ -124,7 +124,7 @@ const Welcome: FC<IWelcomeProps> = ({
             {item.type === 'number' && (
               <input
                 type="number"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 "
+                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500"
                 placeholder={`${item.name}${!item.required ? `(${t('appDebug.variableTable.optional')})` : ''}`}
                 value={inputs[item.key]}
                 onChange={(e) => { onInputsChange({ ...inputs, [item.key]: e.target.value }) }}
@@ -172,26 +172,26 @@ const Welcome: FC<IWelcomeProps> = ({
   }
 
   const canChat = () => {
-    const vars = promptConfig?.prompt_variables ?? [];
+    const vars = promptConfig?.prompt_variables ?? []
 
     const hasEmptyRequired = vars.some(v => {
-      const isRequired = v?.required ?? true;
-      if (!isRequired) return false;
+      const isRequired = v?.required ?? true
+      if (!isRequired) return false
 
-      const val = inputs?.[v.key];
+      const val = inputs?.[v.key]
 
-      if (typeof val === 'string') return val.trim() === '';
+      if (typeof val === 'string') return val.trim() === ''
 
-      return val === undefined || val === null;
-    });
+      return val === undefined || val === null
+    })
 
     if (hasEmptyRequired) {
-      logError(t('app.errorMessage.valueOfVarRequired'));
-      return false;
+      logError(t('app.errorMessage.valueOfVarRequired'))
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const handleChat = () => {
     if (!canChat()) { return }
@@ -354,7 +354,7 @@ const Welcome: FC<IWelcomeProps> = ({
     <div className='relative mobile:min-h-[48px] tablet:min-h-[64px]'>
       {hasSetInputs && renderHeader()}
       <div className='mx-auto pc:w-[794px] max-w-full mobile:w-full px-3.5'>
-        {/*  Has't set inputs  */}
+        {/* Has't set inputs  */}
         {
           !hasSetInputs && (
             <div className='mobile:pt-[72px] tablet:pt-[128px] pc:pt-[200px]'>
@@ -374,12 +374,12 @@ const Welcome: FC<IWelcomeProps> = ({
 
         {/* foot */}
         {!hasSetInputs && (
-          <div className='mt-4 flex justify-between items-center h-8 text-xs text-gray-400'>
+          <div className='mt-4 flex justify-between items-center h-8 text-xs text-slate-400'>
 
             {siteInfo.privacy_policy
               ? <div>{t('app.chat.privacyPolicyLeft')}
                 <a
-                  className='text-gray-500'
+                  className='text-slate-300'
                   href={siteInfo.privacy_policy}
                   target='_blank'
                 >{t('app.chat.privacyPolicyMiddle')}</a>
@@ -387,7 +387,7 @@ const Welcome: FC<IWelcomeProps> = ({
               </div>
               : <div>
               </div>}
-            <a className='flex items-center pr-3 space-x-3' href="https://dify.ai/" target="_blank">
+            <a className='flex items-center pr-3 space-x-3 text-slate-400' href="https://dify.ai/" target="_blank">
               <span className='uppercase'>{t('app.chat.powerBy')}</span>
               <FootLogo />
             </a>
