@@ -40,7 +40,6 @@ const Main: FC<IMainProps> = () => {
   const [isUnknownReason, setIsUnknownReason] = useState<boolean>(false)
   const [promptConfig, setPromptConfig] = useState<PromptConfig | null>(null)
   const [inited, setInited] = useState<boolean>(false)
-  // in mobile, show sidebar by click button
   const [isShowSidebar, { setTrue: showSidebar, setFalse: hideSidebar }] = useBoolean(false)
   const [visionConfig, setVisionConfig] = useState<VisionSettings | undefined>({
     enabled: false,
@@ -54,7 +53,6 @@ const Main: FC<IMainProps> = () => {
     if (APP_INFO?.title) { document.title = `${APP_INFO.title} - Powered by Dify` }
   }, [APP_INFO?.title])
 
-  // onData change thought (the produce obj). https://github.com/immerjs/immer/issues/576
   useEffect(() => {
     setAutoFreeze(false)
     return () => {
@@ -84,17 +82,43 @@ const Main: FC<IMainProps> = () => {
 
   const [conversationIdChangeBecauseOfNew, setConversationIdChangeBecauseOfNew, getConversationIdChangeBecauseOfNew] = useGetState(false)
   const [isChatStarted, { setTrue: setChatStarted, setFalse: setChatNotStarted }] = useBoolean(false)
+
+  // FIX 1: createNewChat sekarang menerima data inputs agar tidak ter-reset
+  const createNewChat = (customInputs?: Record<string, any>) => {
+    const targetInputs = customInputs || currInputs || newConversationInputs
+
+    if (conversationList.some(item => item.id === '-1')) {
+      if (customInputs) {
+        setConversationList(produce(conversationList, (draft) => {
+          const item = draft.find(i => i.id === '-1')
+          if (item) item.inputs = customInputs
+        }))
+      }
+      return
+    }
+
+    setConversationList(produce(conversationList, (draft) => {
+      draft.unshift({
+        id: '-1',
+        name: t('app.chat.newChatDefaultName'),
+        inputs: targetInputs,
+        introduction: conversationIntroduction,
+        suggested_questions: suggestedQuestions,
+      })
+    }))
+  }
+
+  // FIX 2: Simpan inputs dulu ke state sebelum membuat chat
   const handleStartChat = (inputs: Record<string, any>) => {
-    createNewChat()
-    setConversationIdChangeBecauseOfNew(true)
     setCurrInputs(inputs)
+    createNewChat(inputs)
+    setConversationIdChangeBecauseOfNew(true)
     setChatStarted()
-    // parse variables in introduction
     setChatList(generateNewChatListWithOpenStatement('', inputs))
   }
+
   const hasSetInputs = (() => {
     if (!isNewConversation) { return true }
-
     return isChatStarted
   })()
 
@@ -105,9 +129,9 @@ const Main: FC<IMainProps> = () => {
   const handleConversationSwitch = () => {
     if (!inited) { return }
 
-    // update inputs of current conversation
     let notSyncToStateIntroduction = ''
     let notSyncToStateInputs: Record<string, any> | undefined | null = {}
+
     if (!isNewConversation) {
       const item = conversationList.find(item => item.id === currConversationId)
       notSyncToStateInputs = item?.inputs || {}
@@ -120,11 +144,11 @@ const Main: FC<IMainProps> = () => {
       })
     }
     else {
-      notSyncToStateInputs = newConversationInputs
+      // FIX 3: Jangan timpa currInputs jika sudah ada nilainya
+      notSyncToStateInputs = Object.keys(currInputs || {}).length > 0 ? currInputs : newConversationInputs
       setCurrInputs(notSyncToStateInputs)
     }
 
-    // update chat list of current conversation
     if (!isNewConversation && !conversationIdChangeBecauseOfNew && !isResponding) {
       fetchChatList(currConversationId).then((res: any) => {
         const { data } = res
@@ -136,7 +160,6 @@ const Main: FC<IMainProps> = () => {
             content: item.query,
             isAnswer: false,
             message_files: item.message_files?.filter((file: any) => file.belongs_to === 'user') || [],
-
           })
           newChatList.push({
             id: item.id,
@@ -153,6 +176,7 @@ const Main: FC<IMainProps> = () => {
 
     if (isNewConversation && isChatStarted) { setChatList(generateNewChatListWithOpenStatement()) }
   }
+
   useEffect(handleConversationSwitch, [currConversationId, inited])
 
   const handleConversationIdChange = (id: string) => {
@@ -163,18 +187,17 @@ const Main: FC<IMainProps> = () => {
     else {
       setConversationIdChangeBecauseOfNew(false)
     }
-    // trigger handleConversationSwitch
     setCurrConversationId(id, APP_ID)
     hideSidebar()
   }
 
   /*
-  * chat info. chat is under conversation.
+  * chat info
   */
   const [chatList, setChatList, getChatList] = useGetState<ChatItem[]>([])
   const chatListDomRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    // scroll to bottom with page-level scrolling
     if (chatListDomRef.current) {
       setTimeout(() => {
         chatListDomRef.current?.scrollIntoView({
@@ -184,28 +207,15 @@ const Main: FC<IMainProps> = () => {
       }, 50)
     }
   }, [chatList, currConversationId])
-  // user can not edit inputs if user had send message
+
   const canEditInputs = !chatList.some(item => item.isAnswer === false) && isNewConversation
-  const createNewChat = () => {
-    // if new chat is already exist, do not create new chat
-    if (conversationList.some(item => item.id === '-1')) { return }
 
-    setConversationList(produce(conversationList, (draft) => {
-      draft.unshift({
-        id: '-1',
-        name: t('app.chat.newChatDefaultName'),
-        inputs: newConversationInputs,
-        introduction: conversationIntroduction,
-        suggested_questions: suggestedQuestions,
-      })
-    }))
-  }
-
-  // sometime introduction is not applied to state
   const generateNewChatListWithOpenStatement = (introduction?: string, inputs?: Record<string, any> | null) => {
     let calculatedIntroduction = introduction || conversationIntroduction || ''
     const calculatedPromptVariables = inputs || currInputs || null
-    if (calculatedIntroduction && calculatedPromptVariables) { calculatedIntroduction = replaceVarWithValues(calculatedIntroduction, promptConfig?.prompt_variables || [], calculatedPromptVariables) }
+    if (calculatedIntroduction && calculatedPromptVariables) { 
+      calculatedIntroduction = replaceVarWithValues(calculatedIntroduction, promptConfig?.prompt_variables || [], calculatedPromptVariables) 
+    }
 
     const openStatement = {
       id: `${Date.now()}`,
@@ -220,7 +230,7 @@ const Main: FC<IMainProps> = () => {
     return []
   }
 
-  // init
+  // Init
   useEffect(() => {
     if (!hasSetAppConfig) {
       setAppUnavailable(true)
@@ -229,18 +239,15 @@ const Main: FC<IMainProps> = () => {
     (async () => {
       try {
         const [conversationData, appParams] = await Promise.all([fetchConversations(), fetchAppParams()])
-        // handle current conversation id
         const { data: conversations, error } = conversationData as { data: ConversationItem[], error: string }
         if (error) {
           Toast.notify({ type: 'error', message: error })
           throw new Error(error)
-          return
         }
         const _conversationId = getConversationIdFromStorage(APP_ID)
         const currentConversation = conversations.find(item => item.id === _conversationId)
         const isNotNewConversation = !!currentConversation
 
-        // fetch new conversation info
         const { user_input_form, opening_statement: introduction, file_upload, system_parameters, suggested_questions = [] }: any = appParams
         setLocaleOnClient(APP_INFO.default_language, true)
         setNewConversationInfo({
@@ -301,7 +308,6 @@ const Main: FC<IMainProps> = () => {
 
   const checkCanSend = () => {
     if (currConversationId !== '-1') { return true }
-
     if (!currInputs || !promptConfig?.prompt_variables) { return true }
 
     let emptyRequiredInput = false
@@ -317,12 +323,8 @@ const Main: FC<IMainProps> = () => {
     return true
   }
 
-  const [controlFocus, setControlFocus] = useState(0)
-  const [openingSuggestedQuestions, setOpeningSuggestedQuestions] = useState<string[]>([])
   const [messageTaskId, setMessageTaskId] = useState('')
-  const [hasStopResponded, setHasStopResponded, getHasStopResponded] = useGetState(false)
   const [isRespondingConIsCurrCon, setIsRespondingConCurrCon, getIsRespondingConIsCurrCon] = useGetState(true)
-  const [userQuery, setUserQuery] = useState('')
 
   const updateCurrentQA = ({
     responseItem,
@@ -335,12 +337,10 @@ const Main: FC<IMainProps> = () => {
     placeholderAnswerId: string
     questionItem: ChatItem
   }) => {
-    // closesure new list is outdated.
     const newListWithAnswer = produce(
       getChatList().filter(item => item.id !== responseItem.id && item.id !== placeholderAnswerId),
       (draft) => {
         if (!draft.find(item => item.id === questionId)) { draft.push({ ...questionItem }) }
-
         draft.push({ ...responseItem })
       },
     )
@@ -356,6 +356,7 @@ const Main: FC<IMainProps> = () => {
     }
   }
 
+  // Kirim pesan beserta inputs form
   const handleSend = async (message: string, files?: VisionFile[]) => {
     if (isResponding) {
       notify({ type: 'info', message: t('app.errorMessage.waitForResponse') })
@@ -366,15 +367,13 @@ const Main: FC<IMainProps> = () => {
       Object.keys(currInputs).forEach((key) => {
         const value = currInputs[key]
         if (value.supportFileType) { toServerInputs[key] = transformToServerFile(value) }
-
         else if (value[0]?.supportFileType) { toServerInputs[key] = value.map((item: any) => transformToServerFile(item)) }
-
         else { toServerInputs[key] = value }
       })
     }
 
     const data: Record<string, any> = {
-      inputs: toServerInputs,
+      inputs: toServerInputs, // <-- MEMORI FORM TERKIRIM AMAN DI SINI!
       query: message,
       conversation_id: isNewConversation ? null : currConversationId,
     }
@@ -391,7 +390,6 @@ const Main: FC<IMainProps> = () => {
       })
     }
 
-    // question
     const questionId = `question-${Date.now()}`
     const questionItem = {
       id: questionId,
@@ -412,7 +410,6 @@ const Main: FC<IMainProps> = () => {
 
     let isAgentMode = false
 
-    // answer
     const responseItem: ChatItem = {
       id: `${Date.now()}`,
       content: '',
@@ -436,7 +433,7 @@ const Main: FC<IMainProps> = () => {
         }
         else {
           const lastThought = responseItem.agent_thoughts?.[responseItem.agent_thoughts?.length - 1]
-          if (lastThought) { lastThought.thought = lastThought.thought + message } // need immer setAutoFreeze
+          if (lastThought) { lastThought.thought = lastThought.thought + message }
         }
         if (messageId && !hasSetResponseId) {
           responseItem.id = messageId
@@ -446,7 +443,6 @@ const Main: FC<IMainProps> = () => {
         if (isFirstMessage && newConversationId) { tempNewConversationId = newConversationId }
 
         setMessageTaskId(taskId)
-        // has switched to other conversation
         if (prevTempNewConversationId !== getCurrConversationId()) {
           setIsRespondingConCurrCon(false)
           return
@@ -494,13 +490,11 @@ const Main: FC<IMainProps> = () => {
           response.id = thought.message_id
           hasSetResponseId = true
         }
-        // responseItem.id = thought.message_id;
         if (response.agent_thoughts.length === 0) {
           response.agent_thoughts.push(thought)
         }
         else {
           const lastThought = response.agent_thoughts[response.agent_thoughts.length - 1]
-          // thought changed but still the same thought, so update.
           if (lastThought.id === thought.id) {
             thought.thought = lastThought.thought
             thought.message_files = lastThought.message_files
@@ -510,7 +504,6 @@ const Main: FC<IMainProps> = () => {
             responseItem.agent_thoughts!.push(thought)
           }
         }
-        // has switched to other conversation
         if (prevTempNewConversationId !== getCurrConversationId()) {
           setIsRespondingConCurrCon(false)
           return false
@@ -543,8 +536,6 @@ const Main: FC<IMainProps> = () => {
           setChatList(newListWithAnswer)
           return
         }
-        // not support show citation
-        // responseItem.citation = messageEnd.retriever_resources
         const newListWithAnswer = produce(
           getChatList().filter(item => item.id !== responseItem.id && item.id !== placeholderAnswerId),
           (draft) => {
@@ -560,20 +551,17 @@ const Main: FC<IMainProps> = () => {
           getChatList(),
           (draft) => {
             const current = draft.find(item => item.id === messageReplace.id)
-
             if (current) { current.content = messageReplace.answer }
           },
         ))
       },
       onError() {
         setRespondingFalse()
-        // role back placeholder answer
         setChatList(produce(getChatList(), (draft) => {
           draft.splice(draft.findIndex(item => item.id === placeholderAnswerId), 1)
         }))
       },
-      onWorkflowStarted: ({ workflow_run_id, task_id }) => {
-        // taskIdRef.current = task_id
+      onWorkflowStarted: ({ workflow_run_id }) => {
         responseItem.workflow_run_id = workflow_run_id
         responseItem.workflowProcess = {
           status: WorkflowRunningStatus.Running,
@@ -652,7 +640,7 @@ const Main: FC<IMainProps> = () => {
 
   if (!APP_ID || !APP_INFO || !promptConfig) { return <Loading type='app' /> }
 
- return (
+  return (
     <div className='bg-slate-950 text-slate-100 min-h-screen'>
       <Header
         title={APP_INFO.title}
@@ -661,7 +649,6 @@ const Main: FC<IMainProps> = () => {
         onCreateNewChat={() => handleConversationIdChange('-1')}
       />
       <div className="flex rounded-t-2xl bg-slate-900 overflow-hidden border border-slate-800">
-        {/* sidebar */}
         {!isMobile && renderSidebar()}
         {isMobile && isShowSidebar && (
           <div className='fixed inset-0 z-50' style={{ backgroundColor: 'rgba(35, 56, 118, 0.2)' }} onClick={hideSidebar} >
@@ -670,7 +657,6 @@ const Main: FC<IMainProps> = () => {
             </div>
           </div>
         )}
-        {/* main */}
         <div className='flex-grow flex flex-col h-[calc(100vh_-_3rem)] overflow-y-auto'>
           <ConfigSence
             conversationName={conversationName}
@@ -684,20 +670,19 @@ const Main: FC<IMainProps> = () => {
             onInputsChange={setCurrInputs}
           ></ConfigSence>
 
-          {
-            hasSetInputs && (
-              <div className='relative grow pc:w-[794px] max-w-full mobile:w-full pb-[180px] mx-auto mb-3.5' ref={chatListDomRef}>
-                <Chat
-                  chatList={chatList}
-                  onSend={handleSend}
-                  onFeedback={handleFeedback}
-                  isResponding={isResponding}
-                  checkCanSend={checkCanSend}
-                  visionConfig={visionConfig}
-                  fileConfig={fileConfig}
-                />
-              </div>)
-          }
+          {hasSetInputs && (
+            <div className='relative grow pc:w-[794px] max-w-full mobile:w-full pb-[180px] mx-auto mb-3.5' ref={chatListDomRef}>
+              <Chat
+                chatList={chatList}
+                onSend={handleSend}
+                onFeedback={handleFeedback}
+                isResponding={isResponding}
+                checkCanSend={checkCanSend}
+                visionConfig={visionConfig}
+                fileConfig={fileConfig}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
