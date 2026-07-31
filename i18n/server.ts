@@ -21,10 +21,23 @@ export const getLocaleOnServer = async (): Promise<Locale> => {
     const headersList = await headers()
     headersList.forEach((value, key) => (negotiatorHeaders[key] = value))
     // Use negotiator and intl-localematcher to get best locale
-    languages = new Negotiator({ headers: negotiatorHeaders }).languages()
+    try {
+      languages = new Negotiator({ headers: negotiatorHeaders }).languages()
+    } catch (e) {
+      languages = [i18n.defaultLocale]
+    }
   }
 
-  // match locale
-  const matchedLocale = match(languages, locales, i18n.defaultLocale) as Locale
+  // Saring dan bersihin format bahasanya (ganti underscore jadi strip)
+  const safeLanguages = languages.map(lang => lang.replace(/_/g, '-'))
+
+  // Match locale dipakein pelindung try-catch biar gak error 500
+  let matchedLocale: Locale
+  try {
+    matchedLocale = match(safeLanguages, locales, i18n.defaultLocale) as Locale
+  } catch (error) {
+    matchedLocale = i18n.defaultLocale as Locale
+  }
+  
   return matchedLocale
 }
