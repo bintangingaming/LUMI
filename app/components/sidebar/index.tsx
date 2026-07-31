@@ -65,25 +65,4 @@ const Sidebar: FC<ISidebarProps> = ({
                 className={classNames(
                   isCurrent
                     ? 'text-indigo-400'
-                    : 'text-slate-500 group-hover:text-slate-300',
-                  'mr-3 h-5 w-5 flex-shrink-0',
-                )}
-                aria-hidden="true"
-              />
-              {item.name}
-            </div>
-          </div>
-          )
-        })}
-      </nav>
-      {/* <a className="flex flex-shrink-0 p-4" href="https://langgenius.ai/" target="_blank">
-        <Card><div className="flex flex-row items-center"><ChatBubbleOvalLeftEllipsisSolidIcon className="text-primary-600 h-6 w-6 mr-2" /><span>LangGenius</span></div></Card>
-      </a> */}
-      <div className="flex flex-shrink-0 pr-4 pb-4 pl-4">
-        <div className="text-slate-500 font-normal text-xs">© {copyRight} {(new Date()).getFullYear()}</div>
-      </div>
-    </div>
-  )
-}
-
-export default React.memo(Sidebar)
+                    : 'text-slate-50
