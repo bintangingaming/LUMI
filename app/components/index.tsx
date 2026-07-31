@@ -83,7 +83,22 @@ const Main: FC<IMainProps> = () => {
   const [conversationIdChangeBecauseOfNew, setConversationIdChangeBecauseOfNew, getConversationIdChangeBecauseOfNew] = useGetState(false)
   const [isChatStarted, { setTrue: setChatStarted, setFalse: setChatNotStarted }] = useBoolean(false)
 
-  // FIX 1: createNewChat sekarang menerima data inputs agar tidak ter-reset
+  // 🔄 AUTO-LOAD: Ambil data tersimpan dari browser saat web baru pertama kali dibuka
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedInputs = localStorage.getItem('user_saved_inputs')
+      if (savedInputs) {
+        try {
+          const parsedInputs = JSON.parse(savedInputs)
+          setCurrInputs(parsedInputs)
+          setChatStarted() // langsung lewati tampilan form
+        } catch (e) {
+          console.error('Error loading saved inputs:', e)
+        }
+      }
+    }
+  }, [])
+
   const createNewChat = (customInputs?: Record<string, any>) => {
     const targetInputs = customInputs || currInputs || newConversationInputs
 
@@ -108,8 +123,11 @@ const Main: FC<IMainProps> = () => {
     }))
   }
 
-  // FIX 2: Simpan inputs dulu ke state sebelum membuat chat
+  // 💾 SIMPAN: Simpan data form ke localStorage saat klik "Start Chat"
   const handleStartChat = (inputs: Record<string, any>) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user_saved_inputs', JSON.stringify(inputs))
+    }
     setCurrInputs(inputs)
     createNewChat(inputs)
     setConversationIdChangeBecauseOfNew(true)
@@ -144,8 +162,15 @@ const Main: FC<IMainProps> = () => {
       })
     }
     else {
-      // FIX 3: Jangan timpa currInputs jika sudah ada nilainya
-      notSyncToStateInputs = Object.keys(currInputs || {}).length > 0 ? currInputs : newConversationInputs
+      // Ambil data yang tersimpan dari localStorage atau currInputs
+      let savedInputs: Record<string, any> | null = null
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('user_saved_inputs')
+        if (saved) {
+          try { savedInputs = JSON.parse(saved) } catch (e) { console.error(e) }
+        }
+      }
+      notSyncToStateInputs = savedInputs || (Object.keys(currInputs || {}).length > 0 ? currInputs : newConversationInputs)
       setCurrInputs(notSyncToStateInputs)
     }
 
@@ -179,9 +204,24 @@ const Main: FC<IMainProps> = () => {
 
   useEffect(handleConversationSwitch, [currConversationId, inited])
 
+  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru
   const handleConversationIdChange = (id: string) => {
     if (id === '-1') {
-      createNewChat()
+      let savedInputs: Record<string, any> | undefined
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('user_saved_inputs')
+        if (saved) {
+          try {
+            savedInputs = JSON.parse(saved)
+            setCurrInputs(savedInputs)
+            setChatStarted() // bypass pemicu form
+          } catch (e) {
+            console.error(e)
+          }
+        }
+      }
+
+      createNewChat(savedInputs)
       setConversationIdChangeBecauseOfNew(true)
     }
     else {
@@ -373,7 +413,7 @@ const Main: FC<IMainProps> = () => {
     }
 
     const data: Record<string, any> = {
-      inputs: toServerInputs, // <-- MEMORI FORM TERKIRIM AMAN DI SINI!
+      inputs: toServerInputs,
       query: message,
       conversation_id: isNewConversation ? null : currConversationId,
     }
@@ -467,7 +507,6 @@ const Main: FC<IMainProps> = () => {
           setConversationList(newAllConversations as any)
         }
         setConversationIdChangeBecauseOfNew(false)
-        resetNewConversationInputs()
         setChatNotStarted()
         setCurrConversationId(tempNewConversationId, APP_ID, true)
         setRespondingFalse()
