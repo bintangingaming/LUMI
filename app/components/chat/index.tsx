@@ -126,7 +126,6 @@ const Chat: FC<IChatProps> = ({
   const handleKeyUp = (e: any) => {
     if (e.code === 'Enter') {
       e.preventDefault()
-      // prevent send message when using input method enter
       if (!e.shiftKey && !isUseInputMethod.current) { handleSend() }
     }
   }
@@ -174,10 +173,12 @@ const Chat: FC<IChatProps> = ({
           )
         })}
       </div>
+
+      {/* Input Box / Keyboard */}
       {
         !isHideSendInput && (
-          <div className='fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 pc:ml-[122px] tablet:ml-[96px] mobile:ml-0 pc:w-[794px] tablet:w-[794px] max-w-full mobile:w-full px-3.5'>
-            <div className='p-[5.5px] max-h-[150px] bg-white border-[1.5px] border-gray-200 rounded-xl overflow-y-auto'>
+          <div className='fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 pc:ml-[122px] tablet:ml-[96px] mobile:ml-0 pc:w-[794px] tablet:w-[794px] max-w-full mobile:w-full px-3.5 pb-4'>
+            <div className='p-[5.5px] max-h-[150px] bg-slate-900/80 backdrop-blur-xl border-[1.5px] border-slate-700/80 rounded-xl overflow-y-auto shadow-2xl transition-all'>
               {
                 visionConfig?.enabled && (
                   <>
@@ -187,7 +188,7 @@ const Chat: FC<IChatProps> = ({
                         onUpload={onUpload}
                         disabled={files.length >= visionConfig.number_limits}
                       />
-                      <div className='mx-1 w-[1px] h-4 bg-black/5' />
+                      <div className='mx-1 w-[1px] h-4 bg-slate-700/50' />
                     </div>
                     <div className='pl-[52px]'>
                       <ImageList
@@ -214,7 +215,7 @@ const Chat: FC<IChatProps> = ({
               }
               <Textarea
                 className={`
-                  block w-full px-2 pr-[118px] py-[7px] leading-5 max-h-none text-base text-gray-700 outline-none appearance-none resize-none
+                  block w-full px-2 pr-[118px] py-[7px] leading-5 max-h-none text-base text-slate-100 placeholder-slate-400 bg-transparent outline-none appearance-none resize-none
                   ${visionConfig?.enabled && 'pl-12'}
                 `}
                 value={query}
@@ -224,17 +225,19 @@ const Chat: FC<IChatProps> = ({
                 autoSize
               />
               <div className="absolute bottom-2 right-6 flex items-center h-8">
-                <div className={`${s.count} mr-3 h-5 leading-5 text-sm bg-gray-50 text-gray-500 px-2 rounded`}>{query.trim().length}</div>
+                <div className={`${s.count} mr-3 h-5 leading-5 text-sm bg-slate-800 text-slate-400 border border-slate-700/50 px-2 rounded`}>
+                  {query.trim().length}
+                </div>
                 <Tooltip
                   selector='send-tip'
                   htmlContent={
-                    <div>
+                    <div className="text-xs text-slate-200 p-1">
                       <div>{t('common.operation.send')} Enter</div>
                       <div>{t('common.operation.lineBreak')} Shift Enter</div>
                     </div>
                   }
                 >
-                  <div className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md`} onClick={handleSend}></div>
+                  <div className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md transition-opacity hover:opacity-80`}></div>
                 </Tooltip>
               </div>
             </div>
