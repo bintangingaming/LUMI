@@ -4,7 +4,7 @@ export const API_KEY = `${process.env.NEXT_PUBLIC_APP_KEY}`
 export const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`
 export const APP_INFO: AppInfo = {
   title: 'LUMI',
-  description: 'LUMI (Learning, Understanding, Mental Insight) adalah asisten belajar AI interaktif yang dirancang khusus untuk mendampingi siswa SMA. Menggunakan pendekatan metode Socrates, LUMI membimbing kamu memecahkan soal matematika, sains, dan pelajaran lainnya lewat pertanyaan pemancing yang melatih pola pikir kritis.',
+  description: 'LUMI (*Learning, Understanding, Mental Insight*) adalah asisten belajar AI interaktif yang dirancang khusus untuk mendampingi siswa SMA. Menggunakan pendekatan metode Socrates. LUMI membimbing kamu memecahkan soal matematika, sains, dan pelajaran lainnya lewat pertanyaan pemancing yang melatih pola pikir kritis.',
   copyright: '',
   privacy_policy: '',
   default_language: 'en',
