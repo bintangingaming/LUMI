@@ -102,15 +102,23 @@ const Main: FC<IMainProps> = () => {
   const createNewChat = (customInputs?: Record<string, any>) => {
     const targetInputs = customInputs || currInputs || newConversationInputs
 
-    if (conversationList.some(item => item.id === '-1')) {
-      if (customInputs) {
-        setConversationList(produce(conversationList, (draft) => {
-          const item = draft.find(i => i.id === '-1')
-          if (item) item.inputs = customInputs
-        }))
-      }
-      return
-    }
+    // Ganti '-1' dengan timestamp unik agar setiap klik "Chat Baru" 
+    // langsung muncul sebagai baris baru di sidebar!
+    const newTempId = `temp-${Date.now()}`
+
+    setConversationList(produce(conversationList, (draft) => {
+      draft.unshift({
+        id: newTempId,
+        name: t('app.chat.newChatDefaultName'),
+        inputs: targetInputs,
+        introduction: conversationIntroduction,
+        suggested_questions: suggestedQuestions,
+      })
+    }))
+
+    // Kembalikan ID baru ini agar bisa langsung di-set sebagai currConversationId
+    return newTempId
+  }
 
     setConversationList(produce(conversationList, (draft) => {
       draft.unshift({
@@ -206,28 +214,16 @@ const Main: FC<IMainProps> = () => {
 
  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
  const handleConversationIdChange = (id: string) => {
-    // 1. Reset state tampilan utama
     setChatNotStarted() 
     setChatList([]) 
     
+    let targetId = id;
     if (id === '-1') {
-      // 2. LIVE UPDATE SIDEBAR: 
-      // Tambahkan "Percakapan Baru" ke daftar list secara instan
-      setConversationList(prev => {
-        // Cek apakah sudah ada placeholder chat baru agar tidak duplikat
-        if (prev.some(item => item.id === '-1')) return prev;
-        
-        return [{
-          id: '-1',
-          name: t('app.chat.newChatDefaultName'), // "Percakapan Baru"
-          inputs: {},
-          introduction: '',
-          suggested_questions: []
-        }, ...prev];
-      });
-
       if (typeof window !== 'undefined') localStorage.removeItem('user_saved_inputs');
       setCurrInputs({});
+      
+      // Panggil createNewChat dan ambil ID uniknya (misal: temp-171... )
+      targetId = createNewChat();
       setConversationIdChangeBecauseOfNew(true);
     } 
     else {
@@ -235,7 +231,7 @@ const Main: FC<IMainProps> = () => {
       setChatStarted(); 
     }
 
-    setCurrConversationId(id, APP_ID);
+    setCurrConversationId(targetId, APP_ID);
     hideSidebar();
   }
 
