@@ -46,14 +46,15 @@ const Sidebar: FC<ISidebarProps> = ({
   )
 
   return (
-    <aside className="relative z-30 flex flex-col h-full bg-[#1e1f22] text-slate-200 w-[280px] flex-shrink-0 border-r border-slate-800/40 select-none pointer-events-auto">
+    /* Ubah bg-[#1e1f22] di bawah ini sesuai warna container sekitarmu (misal: bg-slate-900 atau bg-[#111827]) */
+    <aside className="relative z-30 flex flex-col h-full bg-[#111827] text-slate-200 w-[280px] flex-shrink-0 border-r border-slate-800/40 select-none pointer-events-auto">
       {/* MENU ATAS UTAMA */}
       <div className="p-3 space-y-1">
         {/* Percakapan Baru */}
         <button
           type="button"
           onClick={handleNewChat}
-          className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-100 hover:bg-[#2b2d31] transition-colors cursor-pointer group"
+          className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-100 hover:bg-slate-800/60 transition-colors cursor-pointer group"
         >
           <svg className="w-5 h-5 text-slate-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -65,7 +66,7 @@ const Sidebar: FC<ISidebarProps> = ({
         <button
           type="button"
           onClick={() => setShowSearchInput(!showSearchInput)}
-          className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-[#2b2d31] transition-colors cursor-pointer group"
+          className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors cursor-pointer group"
         >
           <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -81,7 +82,7 @@ const Sidebar: FC<ISidebarProps> = ({
               placeholder="Cari chat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#111214] text-xs text-white rounded-lg px-3 py-2 border border-slate-700/60 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[#0b0f19] text-xs text-white rounded-lg px-3 py-2 border border-slate-700/60 focus:outline-none focus:border-indigo-500"
             />
           </div>
         )}
@@ -89,7 +90,7 @@ const Sidebar: FC<ISidebarProps> = ({
         {/* Koleksi */}
         <button
           type="button"
-          className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-[#2b2d31] transition-colors cursor-pointer group"
+          className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors cursor-pointer group"
         >
           <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -117,8 +118,8 @@ const Sidebar: FC<ISidebarProps> = ({
                 className={classNames(
                   'w-full text-left px-3.5 py-2.5 rounded-full text-sm transition-all cursor-pointer block truncate',
                   isCurrent
-                    ? 'bg-[#2b2d31] text-white font-medium shadow-sm'
-                    : 'text-slate-300 hover:bg-[#2b2d31]/60 hover:text-slate-100'
+                    ? 'bg-slate-800 text-white font-medium shadow-sm'
+                    : 'text-slate-300 hover:bg-slate-800/40 hover:text-slate-100'
                 )}
               >
                 {item.name || 'Percakapan Tanpa Judul'}
@@ -140,7 +141,7 @@ const Sidebar: FC<ISidebarProps> = ({
             setShowProfileMenu(!showProfileMenu)
             setShowSettings(false)
           }}
-          className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-[#2b2d31] transition w-full text-left cursor-pointer"
+          className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-800/60 transition w-full text-left cursor-pointer"
         >
           <img src={profile.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700" />
           <div className="truncate flex-1">
@@ -156,7 +157,7 @@ const Sidebar: FC<ISidebarProps> = ({
             setShowProfileMenu(false)
           }}
           title="Pengaturan"
-          className="p-2 text-slate-400 hover:text-white hover:bg-[#2b2d31] rounded-xl transition cursor-pointer"
+          className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition cursor-pointer"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -166,13 +167,13 @@ const Sidebar: FC<ISidebarProps> = ({
 
         {/* POPOVER PROFIL */}
         {showProfileMenu && (
-          <div className="absolute bottom-16 left-3 w-56 bg-[#111214] border border-slate-800 rounded-xl shadow-2xl p-2 z-50 text-xs text-slate-200">
+          <div className="absolute bottom-16 left-3 w-56 bg-[#0b0f19] border border-slate-800 rounded-xl shadow-2xl p-2 z-50 text-xs text-slate-200">
             <button
               onClick={() => {
                 setShowProfileMenu(false)
                 setShowEditProfile(true)
               }}
-              className="w-full text-left px-3 py-2 hover:bg-[#2b2d31] rounded-lg transition text-slate-300 hover:text-white cursor-pointer flex items-center gap-2"
+              className="w-full text-left px-3 py-2 hover:bg-slate-800 rounded-lg transition text-slate-300 hover:text-white cursor-pointer flex items-center gap-2"
             >
               <span>✏️</span> Edit Profil Saya
             </button>
@@ -182,7 +183,7 @@ const Sidebar: FC<ISidebarProps> = ({
         {/* MODAL EDIT PROFIL */}
         {showEditProfile && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#1e1f22] border border-slate-800 rounded-2xl w-full max-w-sm p-5 relative shadow-2xl text-left">
+            <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-sm p-5 relative shadow-2xl text-left">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold text-white">Edit Profil</h3>
                 <button onClick={() => setShowEditProfile(false)} className="text-slate-400 hover:text-white">✕</button>
@@ -195,7 +196,7 @@ const Sidebar: FC<ISidebarProps> = ({
                     type="text"
                     value={profile.name}
                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                    className="w-full bg-[#111214] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div>
@@ -204,7 +205,7 @@ const Sidebar: FC<ISidebarProps> = ({
                     type="text"
                     value={profile.grade}
                     onChange={(e) => setProfile({ ...profile, grade: e.target.value })}
-                    className="w-full bg-[#111214] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -222,7 +223,7 @@ const Sidebar: FC<ISidebarProps> = ({
         {/* MODAL PENGATURAN AI */}
         {showSettings && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#1e1f22] border border-slate-800 rounded-2xl w-full max-w-md p-5 relative shadow-2xl text-left">
+            <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md p-5 relative shadow-2xl text-left">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold text-white">Pengaturan Memori & AI</h3>
                 <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white">✕</button>
@@ -234,7 +235,7 @@ const Sidebar: FC<ISidebarProps> = ({
                   <select
                     value={aiSettings.mode}
                     onChange={(e) => setAiSettings({ ...aiSettings, mode: e.target.value })}
-                    className="w-full bg-[#111214] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
                   >
                     <option value="Metode Socrates">Metode Socrates (Pemancing Kritis)</option>
                     <option value="Penjelas Langsung">Penjelas Langsung</option>
@@ -245,7 +246,7 @@ const Sidebar: FC<ISidebarProps> = ({
                   <select
                     value={aiSettings.memoryLimit}
                     onChange={(e) => setAiSettings({ ...aiSettings, memoryLimit: e.target.value })}
-                    className="w-full bg-[#111214] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
                   >
                     <option value="5 Pesan">5 Pesan Terakhir</option>
                     <option value="10 Pesan">10 Pesan Terakhir</option>
