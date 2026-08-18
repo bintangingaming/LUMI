@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 
 import type { IMainProps } from '@/app/components'
 import Main from '@/app/components'
-import AuthModal from '@/components/AuthModal' // Sesuaikan path foldernya kalau beda
+import AuthModal from '@/app/components/AuthModal' // Sesuaikan path foldernya kalau beda
 
 const App: FC<IMainProps> = ({
   params,
