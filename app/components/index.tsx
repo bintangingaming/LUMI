@@ -204,7 +204,7 @@ const Main: FC<IMainProps> = () => {
 
   useEffect(handleConversationSwitch, [currConversationId, inited])
 
-  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru
+ // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
   const handleConversationIdChange = (id: string) => {
     if (id === '-1') {
       let savedInputs: Record<string, any> | undefined
@@ -223,9 +223,14 @@ const Main: FC<IMainProps> = () => {
 
       createNewChat(savedInputs)
       setConversationIdChangeBecauseOfNew(true)
+      
+      // TAMBAHAN KUNCI UTAMA DI SINI:
+      // Kosongkan chat list dan reset tampilan agar kembali ke state awal chat baru
+      setChatList(generateNewChatListWithOpenStatement('', savedInputs))
     }
     else {
       setConversationIdChangeBecauseOfNew(false)
+      setChatNotStarted() // Mengembalikan state agar form input/config bisa diakses jika diperlukan
     }
     setCurrConversationId(id, APP_ID)
     hideSidebar()
