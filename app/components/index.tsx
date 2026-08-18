@@ -206,33 +206,37 @@ const Main: FC<IMainProps> = () => {
 
  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
  const handleConversationIdChange = (id: string) => {
-    // 1. Reset ke kondisi "Homepage / Awal"
+    // 1. Reset state tampilan utama
     setChatNotStarted() 
     setChatList([]) 
     
-    // 2. Jika klik tombol "New Chat" (biasanya ID '-1')
     if (id === '-1') {
-      // Bersihkan input lama dari state
-      setCurrInputs({}) 
-      // Hapus data dari localStorage supaya tidak memanggil chat lama saat reload
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('user_saved_inputs')
-      }
-      
-      createNewChat()
-      setConversationIdChangeBecauseOfNew(true)
+      // 2. LIVE UPDATE SIDEBAR: 
+      // Tambahkan "Percakapan Baru" ke daftar list secara instan
+      setConversationList(prev => {
+        // Cek apakah sudah ada placeholder chat baru agar tidak duplikat
+        if (prev.some(item => item.id === '-1')) return prev;
+        
+        return [{
+          id: '-1',
+          name: t('app.chat.newChatDefaultName'), // "Percakapan Baru"
+          inputs: {},
+          introduction: '',
+          suggested_questions: []
+        }, ...prev];
+      });
+
+      if (typeof window !== 'undefined') localStorage.removeItem('user_saved_inputs');
+      setCurrInputs({});
+      setConversationIdChangeBecauseOfNew(true);
     } 
     else {
-      // 3. Jika klik riwayat chat, set status menjadi "sudah mulai"
-      setConversationIdChangeBecauseOfNew(false)
-      setChatStarted() 
+      setConversationIdChangeBecauseOfNew(false);
+      setChatStarted(); 
     }
 
-    // 4. Update ID percakapan di sistem
-    setCurrConversationId(id, APP_ID)
-    
-    // 5. Tutup sidebar di mobile
-    hideSidebar()
+    setCurrConversationId(id, APP_ID);
+    hideSidebar();
   }
 
   /*
