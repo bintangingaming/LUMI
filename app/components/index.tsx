@@ -205,34 +205,33 @@ const Main: FC<IMainProps> = () => {
   useEffect(handleConversationSwitch, [currConversationId, inited])
 
  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
-  const handleConversationIdChange = (id: string) => {
+ const handleConversationIdChange = (id: string) => {
+    // 1. Reset ke kondisi "Homepage / Awal"
+    setChatNotStarted() 
+    setChatList([]) 
+    
+    // 2. Jika klik tombol "New Chat" (biasanya ID '-1')
     if (id === '-1') {
-      let savedInputs: Record<string, any> | undefined
+      // Bersihkan input lama dari state
+      setCurrInputs({}) 
+      // Hapus data dari localStorage supaya tidak memanggil chat lama saat reload
       if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('user_saved_inputs')
-        if (saved) {
-          try {
-            savedInputs = JSON.parse(saved)
-            setCurrInputs(savedInputs)
-            setChatStarted() // bypass pemicu form
-          } catch (e) {
-            console.error(e)
-          }
-        }
+        localStorage.removeItem('user_saved_inputs')
       }
-
-      createNewChat(savedInputs)
-      setConversationIdChangeBecauseOfNew(true)
       
-      // TAMBAHAN KUNCI UTAMA DI SINI:
-      // Kosongkan chat list dan reset tampilan agar kembali ke state awal chat baru
-      setChatList(generateNewChatListWithOpenStatement('', savedInputs))
-    }
+      createNewChat()
+      setConversationIdChangeBecauseOfNew(true)
+    } 
     else {
+      // 3. Jika klik riwayat chat, set status menjadi "sudah mulai"
       setConversationIdChangeBecauseOfNew(false)
-      setChatNotStarted() // Mengembalikan state agar form input/config bisa diakses jika diperlukan
+      setChatStarted() 
     }
+
+    // 4. Update ID percakapan di sistem
     setCurrConversationId(id, APP_ID)
+    
+    // 5. Tutup sidebar di mobile
     hideSidebar()
   }
 
