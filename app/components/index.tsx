@@ -730,6 +730,6 @@ const Main: FC<IMainProps> = () => {
       </div>
     </div>
   )
-}
+ }
 
 export default React.memo(Main)
