@@ -723,13 +723,13 @@ const Main: FC<IMainProps> = () => {
                 checkCanSend={checkCanSend}
                 visionConfig={visionConfig}
                 fileConfig={fileConfig}
-              />
-            </div>
-          )}
+              fileConfig={fileConfig}
+            />
+          </div>
         </div>
       </div>
     </div>
   )
- }
+}
 
 export default React.memo(Main)
