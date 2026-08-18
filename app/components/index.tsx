@@ -120,17 +120,6 @@ const Main: FC<IMainProps> = () => {
     return newTempId
   }
 
-    setConversationList(produce(conversationList, (draft) => {
-      draft.unshift({
-        id: '-1',
-        name: t('app.chat.newChatDefaultName'),
-        inputs: targetInputs,
-        introduction: conversationIntroduction,
-        suggested_questions: suggestedQuestions,
-      })
-    }))
-  }
-
   // 💾 SIMPAN: Simpan data form ke localStorage saat klik "Start Chat"
   const handleStartChat = (inputs: Record<string, any>) => {
     if (typeof window !== 'undefined') {
@@ -212,8 +201,8 @@ const Main: FC<IMainProps> = () => {
 
   useEffect(handleConversationSwitch, [currConversationId, inited])
 
- // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
- const handleConversationIdChange = (id: string) => {
+  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
+  const handleConversationIdChange = (id: string) => {
     setChatNotStarted() 
     setChatList([]) 
     
@@ -723,9 +712,9 @@ const Main: FC<IMainProps> = () => {
                 checkCanSend={checkCanSend}
                 visionConfig={visionConfig}
                 fileConfig={fileConfig}
-              fileConfig={fileConfig}
-            />
-          </div>
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
