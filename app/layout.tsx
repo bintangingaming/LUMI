@@ -18,12 +18,11 @@ export default function LocaleLayout({
   return (
     <html lang="en" className="h-full">
       <body className="h-full">
-        <div className="overflow-x-auto">
-          <div className="w-screen h-screen min-w-[300px]">
-            {children}
-            {/* AuthModal bisa ditaruh di sini supaya selalu siap dipanggil */}
-          </div>
-        </div>
+        <div className="w-screen h-screen overflow-hidden">
+  <div className="w-full h-full">
+    {children}
+  </div>
+</div>
       </body>
     </html>
   )
