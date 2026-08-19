@@ -1,7 +1,8 @@
 'use client'
 import type { FC } from 'react'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import classNames from 'classnames'
+import { Camera } from 'lucide-react'
 
 export interface ISidebarProps {
   currentId: string
@@ -20,13 +21,45 @@ const Sidebar: FC<ISidebarProps> = ({
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // State Profil User
+  // State Profil User (Display Name, Username, Kelas/Bio, Avatar)
   const [profile, setProfile] = useState({
-    name: 'Siswa LUMI',
+    displayName: 'Bwnjiwngn Twengik',
+    username: 'bintangingaming',
     grade: '12 SMA - IPA',
     avatar: 'https://github.com/shadcn.png'
   })
+
+  // Load data profil dari localStorage saat pertama kali komponen dibuka
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('lumi_user_profile')
+    if (savedProfile) {
+      try {
+        setProfile(JSON.parse(savedProfile))
+      } catch (e) {
+        console.error("Gagal memuat profil", e)
+      }
+    }
+  }, [])
+
+  // Fungsi simpan profil ke localStorage
+  const handleSaveProfile = () => {
+    localStorage.setItem('lumi_user_profile', JSON.stringify(profile))
+    setShowEditProfile(false)
+  }
+
+  // Handler untuk upload/ganti foto profil
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfile((prev) => ({ ...prev, avatar: reader.result as string }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   // State Pengaturan AI
   const [aiSettings, setAiSettings] = useState({
@@ -46,11 +79,9 @@ const Sidebar: FC<ISidebarProps> = ({
   )
 
   return (
-    /* Ubah bg-[#1e1f22] di bawah ini sesuai warna container sekitarmu (misal: bg-slate-900 atau bg-[#111827]) */
     <aside className="relative z-30 flex flex-col h-full bg-[#111827] text-slate-200 w-[280px] flex-shrink-0 border-r border-slate-800/40 select-none pointer-events-auto">
       {/* MENU ATAS UTAMA */}
       <div className="p-3 space-y-1">
-        {/* Percakapan Baru */}
         <button
           type="button"
           onClick={handleNewChat}
@@ -62,7 +93,6 @@ const Sidebar: FC<ISidebarProps> = ({
           <span>Percakapan baru</span>
         </button>
 
-        {/* Telusuri Percakapan */}
         <button
           type="button"
           onClick={() => setShowSearchInput(!showSearchInput)}
@@ -74,7 +104,6 @@ const Sidebar: FC<ISidebarProps> = ({
           <span>Telusuri percakapan</span>
         </button>
 
-        {/* Input Pencarian jika di-klik */}
         {showSearchInput && (
           <div className="px-1 py-1">
             <input
@@ -87,24 +116,22 @@ const Sidebar: FC<ISidebarProps> = ({
           </div>
         )}
 
-        {/* Koleksi */}
         <button
           type="button"
           className="flex items-center w-full gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors cursor-pointer group"
         >
           <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
           <span>Koleksi</span>
         </button>
       </div>
 
-      {/* HEADER SECTION TERBARU */}
       <div className="px-4 pt-4 pb-2">
         <span className="text-xs font-semibold text-slate-400 tracking-wide">Terbaru</span>
       </div>
 
-      {/* DAFTAR PERCAKAPAN (LIST ITEM CHAT) */}
+      {/* DAFTAR PERCAKAPAN */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1 scrollbar-none">
         {filteredList && filteredList.length > 0 ? (
           filteredList.map((item) => {
@@ -133,7 +160,7 @@ const Sidebar: FC<ISidebarProps> = ({
         )}
       </div>
 
-      {/* FOOTER BAWAH: PROFIL & SETTINGS */}
+      {/* FOOTER BAWAH */}
       <div className="p-3 border-t border-slate-800/60 flex items-center justify-between relative">
         <button
           type="button"
@@ -145,8 +172,8 @@ const Sidebar: FC<ISidebarProps> = ({
         >
           <img src={profile.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700" />
           <div className="truncate flex-1">
-            <div className="text-xs font-medium text-white truncate">{profile.name}</div>
-            <div className="text-[10px] text-slate-400 truncate">{profile.grade}</div>
+            <div className="text-xs font-medium text-white truncate">{profile.displayName}</div>
+            <div className="text-[10px] text-slate-400 truncate">@{profile.username} • {profile.grade}</div>
           </div>
         </button>
 
@@ -183,39 +210,91 @@ const Sidebar: FC<ISidebarProps> = ({
         {/* MODAL EDIT PROFIL */}
         {showEditProfile && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-sm p-5 relative shadow-2xl text-left">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-semibold text-white">Edit Profil</h3>
-                <button onClick={() => setShowEditProfile(false)} className="text-slate-400 hover:text-white">✕</button>
+            <div className="bg-[#1e2330] border border-slate-800 rounded-2xl w-full max-w-md p-6 relative shadow-2xl text-slate-100">
+              <div className="flex justify-between items-center pb-4 mb-2">
+                <h3 className="text-xl font-semibold tracking-wide">Edit profile</h3>
+                <button onClick={() => setShowEditProfile(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors">✕</button>
               </div>
 
-              <div className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-slate-400 mb-1">Nama</label>
+              {/* Bagian Upload Foto Profil di Tengah */}
+              <div className="flex flex-col items-center justify-center mb-6">
+                <div 
+                  className="relative group cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <img 
+                    src={profile.avatar} 
+                    alt="Avatar Preview" 
+                    className="h-24 w-24 rounded-full object-cover border-2 border-teal-600 shadow-inner" 
+                  />
+                  <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-700 text-slate-300 shadow-md transition-transform group-hover:scale-105">
+                    <Camera className="w-4 h-4" />
+                  </div>
+                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleImageChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+              </div>
+
+              {/* Form Input Data */}
+              <div className="space-y-4 text-xs">
+                {/* Display Name */}
+                <div className="flex flex-col rounded-xl bg-slate-900/60 p-3 border border-slate-800 focus-within:border-teal-500 transition-colors">
+                  <label className="text-slate-400 mb-1 font-medium">Display name</label>
                   <input
                     type="text"
-                    value={profile.name}
-                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                    className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    value={profile.displayName}
+                    onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
+                    className="bg-transparent text-slate-100 outline-none text-sm font-medium"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-400 mb-1">Kelas / Bio</label>
+
+                {/* Username */}
+                <div className="flex flex-col rounded-xl bg-slate-900/60 p-3 border border-slate-800 focus-within:border-teal-500 transition-colors">
+                  <label className="text-slate-400 mb-1 font-medium">Username</label>
+                  <input
+                    type="text"
+                    value={profile.username}
+                    onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                    className="bg-transparent text-slate-100 outline-none text-sm font-medium"
+                  />
+                </div>
+
+                {/* Kelas / Bio */}
+                <div className="flex flex-col rounded-xl bg-slate-900/60 p-3 border border-slate-800 focus-within:border-teal-500 transition-colors">
+                  <label className="text-slate-400 mb-1 font-medium">Kelas / Bio</label>
                   <input
                     type="text"
                     value={profile.grade}
                     onChange={(e) => setProfile({ ...profile, grade: e.target.value })}
-                    className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="bg-transparent text-slate-100 outline-none text-sm font-medium"
                   />
                 </div>
+
+                <p className="text-[11px] text-slate-400 px-1 pt-1">
+                  Your profile helps people recognize you in group chats.
+                </p>
               </div>
 
-              <button
-                onClick={() => setShowEditProfile(false)}
-                className="mt-5 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-medium transition cursor-pointer"
-              >
-                Simpan
-              </button>
+              {/* Tombol Aksi */}
+              <div className="mt-6 flex items-center justify-end space-x-3 pt-2">
+                <button
+                  onClick={() => setShowEditProfile(false)}
+                  className="rounded-full px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  className="rounded-full bg-slate-100 px-6 py-2.5 text-sm font-medium text-slate-950 hover:bg-white transition-colors shadow-lg cursor-pointer"
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         )}
