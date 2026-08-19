@@ -123,9 +123,14 @@ const Main: FC<IMainProps> = () => {
   }
 
   // 💾 SIMPAN: Simpan data form ke localStorage saat klik "Start Chat"
-  const handleStartChat = (inputs: Record<string, any>) => {
+  const handleStartChat = (inputs: Record<string, any>, aiSettings?: { mode: string, memory: string }) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user_saved_inputs', JSON.stringify(inputs))
+      
+      // Kalau ada pengaturan AI yang dikirim, simpan juga ke localStorage
+      if (aiSettings) {
+        localStorage.setItem('lumi_ai_settings', JSON.stringify(aiSettings))
+      }
     }
     setCurrInputs(inputs)
     createNewChat(inputs)
@@ -138,7 +143,7 @@ const Main: FC<IMainProps> = () => {
     if (!isNewConversation) { return true }
     return isChatStarted
   })()
-
+  
   const conversationName = currConversationInfo?.name || t('app.chat.newChatDefaultName') as string
   const conversationIntroduction = currConversationInfo?.introduction || ''
   const suggestedQuestions = currConversationInfo?.suggested_questions || []
