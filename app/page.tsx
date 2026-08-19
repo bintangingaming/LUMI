@@ -6,8 +6,7 @@ import type { IMainProps } from '@/app/components'
 import Main from '@/app/components'
 import AuthModal from '@/app/components/AuthModal'
 import EditProfileModal from '@/app/components/EditProfileModal'
-import AuthButtons from '@/app/components/AuthButtons' // <-- 1. Import komponen tombol auth
-
+import AuthButtons from '@/app/components/authbuttons'
 const App: FC<IMainProps> = ({
   params,
 }: any) => {
