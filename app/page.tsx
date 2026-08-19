@@ -4,29 +4,36 @@ import React, { useState } from 'react'
 
 import type { IMainProps } from '@/app/components'
 import Main from '@/app/components'
-import AuthModal from '@/app/components/AuthModal' // Sesuaikan path foldernya kalau beda
+import AuthModal from '@/app/components/AuthModal'
+import EditProfileModal from '@/app/components/EditProfileModal'
 
 const App: FC<IMainProps> = ({
   params,
 }: any) => {
   // State buat ngontrol popup login (buka/tutup)
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(true)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  
+  // State buat ngontrol popup edit profil (buka/tutup)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
 
   return (
     <>
-      {/* Komponen utama LUMI kamu */}
-      <Main params={params} />
-
-      {/*
-        Contoh: Kalau komponen Main kamu punya tombol "Upload" atau "Edit Profil",
-        kamu bisa lempar fungsi "setIsAuthModalOpen(true)" ke dalamnya
-        atau dipasang di sini.
-      */}
+      {/* Komponen utama LUMI kamu, dikasih props buat nge-trigger popup edit profil */}
+      <Main 
+        params={params} 
+        onOpenEditProfile={() => setIsEditProfileOpen(true)} 
+      />
 
       {/* Komponen Popup Login */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
+
+      {/* Komponen Popup Edit Profil */}
+      <EditProfileModal 
+        isOpen={isEditProfileOpen} 
+        onClose={() => setIsEditProfileOpen(false)} 
       />
     </>
   )
