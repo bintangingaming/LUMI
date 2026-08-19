@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
+// Ganti bagian di dalam tanda petik ini dengan URL project kamu (tanpa spasi!)
 const supabase = createClient('https://aztrwfonfwdlfpyonxif.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6dHJ3Zm9uZndkbGZweW9ueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMjk2MDMsImV4cCI6MjEwMjYwNTYwM30.lQjuNq7aWcBqvGLZ3gu5uI_a14LCZRFV7MliTaQ8Zi8')
-
 // Menerima props isOpen dan onClose dari halaman utama
 export default function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [emailInput, setEmailInput] = useState('')
