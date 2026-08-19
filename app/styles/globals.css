@@ -123,3 +123,12 @@ a {
   background-clip: text;
   text-fill-color: transparent;
 }
+/* Sembunyikan scrollbar untuk semua browser (Chrome, Safari, Firefox, Edge) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
