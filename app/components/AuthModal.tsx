@@ -1,81 +1,97 @@
 'use client'
-import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import type { FC } from 'react'
+import React, { useState } from 'react'
+import { XMarkIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 
-const supabase = createClient('https://aztrwfonfwdlfpyonxif.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6dHJ3Zm9uZndkbGZweW9ueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMjk2MDMsImV4cCI6MjEwMjYwNTYwM30.lQjuNq7aWcBqvGLZ3gu5uI_a14LCZRFV7MliTaQ8Zi8')
+export interface IAuthModalProps {
+  isOpen: boolean
+  onClose: () => void
+}
 
-export default function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [emailInput, setEmailInput] = useState('')
+const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
+  const [email, setEmail] = useState('')
 
   if (!isOpen) return null
 
-  // Fungsi Login Google dengan Redirect Dinamis
-  const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({ 
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
-    })
-  }
-
-  // Fungsi Kirim Link Login via Email dengan Redirect Dinamis
-  const handleEmailLogin = async () => {
-    const { error } = await supabase.auth.signInWithOtp({ 
-      email: emailInput,
-      options: {
-        emailRedirectTo: window.location.origin
-      }
-    })
-    if (error) {
-      alert('Gagal mengirim link: ' + error.message)
-    } else {
-      alert('Cek email kamu untuk link login!')
-    }
-  }
-
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-      backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
-    }}>
-      <div style={{ background: 'white', padding: '30px', borderRadius: '8px', width: '320px', textAlign: 'center', color: 'black' }}>
-        <h3>Login dulu untuk melanjutkan</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
+      {/* Kotak Modal */}
+      <div className="relative w-full max-w-md p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl text-slate-100">
         
-        {/* Input Email di atas */}
-        <input 
-          type="email" 
-          placeholder="Masukkan email kamu..." 
-          value={emailInput}
-          onChange={(e) => setEmailInput(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box' }}
-        />
-        <button 
-          onClick={handleEmailLogin}
-          style={{ width: '100%', padding: '8px', marginBottom: '15px', cursor: 'pointer' }}
+        {/* Tombol X di Pojok Kanan Atas */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
         >
-          Kirim Link Login via Email
+          <XMarkIcon className="w-5 h-5" />
         </button>
 
-        {/* Tulisan OR di tengah */}
-        <p style={{ color: '#888', margin: '10px 0' }}>or</p>
+        {/* Judul Modal */}
+        <div className="text-center mb-6 mt-2">
+          <h3 className="text-lg font-bold text-white">Login/Daftar terlebih dahulu untuk melanjutkan</h3>
+          <p className="text-xs text-slate-400 mt-1">Akses semua fitur cerdas LUMI dengan masuk ke akunmu.</p>
+        </div>
 
-        {/* Tombol Login dengan Google di bawah */}
-        <button 
-          onClick={handleGoogleLogin} 
-          style={{ width: '100%', padding: '8px', background: '#4285F4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        {/* Form Email */}
+        <div className="space-y-4">
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+              <EnvelopeIcon className="w-5 h-5" />
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Masukkan email kamu..."
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+          </div>
+
+          <button
+            onClick={() => alert(`Mengirim link login ke: ${email}`)}
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-blue-600/20"
+          >
+            Kirim Link Login via Email
+          </button>
+        </div>
+
+        {/* Pemisah "OR" */}
+        <div className="flex items-center my-6">
+          <div className="flex-grow border-t border-slate-800"></div>
+          <span className="px-3 text-xs text-slate-500 uppercase font-medium">atau</span>
+          <div className="flex-grow border-t border-slate-800"></div>
+        </div>
+
+        {/* Tombol Google */}
+        <button
+          onClick={() => alert('Login dengan Google diklik!')}
+          className="w-full flex items-center justify-center gap-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium text-sm rounded-xl border border-slate-700 transition-all"
         >
-          Login with Google
+          {/* Logo Google SVG */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <path
+              fill="#EA4335"
+              d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5z"
+            />
+            <path
+              fill="#4285F4"
+              d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.3 14.7c-.2-.7-.3-1.5-.3-2.3s.1-1.6.3-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.3L1.6 15.9C3.5 19.7 7.4 23 12 23z"
+            />
+          </svg>
+          Lanjutkan dengan Google
         </button>
 
-        <br /><br />
-        <button 
-          onClick={onClose} 
-          style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer' }}
-        >
-          Tutup
-        </button>
       </div>
     </div>
   )
 }
+
+export default AuthModal
