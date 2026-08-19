@@ -1,156 +1,111 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import React, { useState } from 'react'
+import { Camera, X } from 'lucide-react'
 
-const supabase = createClient('https://aztrwfonfwdlfpyonxif.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6dHJ3Zm9uZndkbGZweW9ueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMjk2MDMsImV4cCI6MjEwMjYwNTYwM30.lQjuNq7aWcBqvGLZ3gu5uI_a14LCZRFV7MliTaQ8Zi8')
+interface EditProfileModalProps {
+  isOpen: boolean
+  onClose: () => void
+}
 
-export default function EditProfileModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [fullName, setFullName] = useState('')
-  const [username, setUsername] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  // Ambil data user yang sedang login saat modal dibuka
-  useEffect(() => {
-    async function loadUserData() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        // Ambil nama dan foto dari metadata Google Auth
-        setFullName(user.user_metadata?.full_name || user.email?.split('@')[0] || '')
-        setAvatarUrl(user.user_metadata?.avatar_url || '')
-        
-        // Cek apakah sudah ada data tambahan di tabel profile kustom (jika ada)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        if (profile) {
-          setUsername(profile.username || '')
-        }
-      }
-    }
-    if (isOpen) {
-      loadUserData()
-    }
-  }, [isOpen])
+export default function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
+  // State untuk menampung nilai input pengguna
+  const [displayName, setDisplayName] = useState('Bwnjiwngn Twengik')
+  const [username, setUsername] = useState('bintangingaming')
+  const [kelasBio, setKelasBio] = useState('12 SMA - IPA')
+  const [avatar, setAvatar] = useState('BT') // Bisa inisial atau URL foto
 
   if (!isOpen) return null
 
-  // Fungsi untuk menyimpan perubahan profil
-  const handleSave = async () => {
-    setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      alert('Kamu harus login terlebih dahulu!')
-      setLoading(false)
-      return
-    }
-
-    // Update metadata di auth.users (untuk nama)
-    const { error: authError } = await supabase.auth.updateUser({
-      data: { full_name: fullName }
-    })
-
-    // Upsert data ke tabel profiles (jika kamu punya tabel profiles sendiri)
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        full_name: fullName,
-        username: username,
-        updated_at: new Date(),
-      })
-
-    setLoading(false)
-
-    if (authError || profileError) {
-      alert('Gagal menyimpan profil: ' + (authError?.message || profileError?.message))
-    } else {
-      alert('Profil berhasil diperbarui!')
-      onClose()
-    }
+  const handleSave = () => {
+    // Di sini kamu bisa tambahkan logika simpan (misal ke localStorage atau backend)
+    console.log({ displayName, username, kelasBio })
+    onClose()
   }
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-      backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
-    }}>
-      <div style={{ 
-        background: '#1e1e24', padding: '30px', borderRadius: '12px', width: '400px', 
-        color: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', position: 'relative' 
-      }}>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'>
+      <div className='relative w-full max-w-md rounded-2xl bg-[#1e2330] p-6 text-slate-100 shadow-2xl border border-slate-800 animate-in fade-in zoom-in-95 duration-200'>
+        
         {/* Tombol Close (X) di pojok kanan atas */}
-        <button 
-          onClick={onClose}
-          style={{ background: 'transparent', border: 'none', color: '#aaa', fontSize: '18px', position: 'absolute', top: '20px', right: '20px', cursor: 'pointer' }}
-        >
-          ✕
-        </button>
+        <div className='flex items-center justify-between pb-4 mb-2'>
+          <h2 className='text-xl font-semibold tracking-wide'>Edit profile</h2>
+          <button 
+            onClick={onClose}
+            className='rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors'
+          >
+            <X className='w-5 h-5' />
+          </button>
+        </div>
 
-        <h3 style={{ marginBottom: '20px', fontSize: '20px' }}>Edit profile</h3>
-
-        {/* Bagian Foto Profil & Tombol Kamera */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px', position: 'relative' }}>
-          <div style={{ width: '90px', height: '90px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #2ecc71', background: '#333', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontSize: '28px', fontWeight: 'bold' }}>{fullName ? fullName.charAt(0).toUpperCase() : 'U'}</span>
-            )}
-          </div>
-          {/* Badge Kamera */}
-          <div style={{ 
-            position: 'absolute', bottom: '0', right: '145px', background: '#2c2c35', 
-            borderRadius: '50%', padding: '6px', border: '1px solid #444', cursor: 'pointer' 
-          }}>
-            📷
+        {/* Bagian Foto Profil di Tengah */}
+        <div className='flex flex-col items-center justify-center mb-6'>
+          <div className='relative group cursor-pointer'>
+            <div className='flex h-24 w-24 items-center justify-center rounded-full bg-teal-600 text-2xl font-bold text-white shadow-inner'>
+              {avatar}
+            </div>
+            {/* Tombol Kamera di Foto */}
+            <div className='absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-700 text-slate-300 shadow-md transition-transform group-hover:scale-105'>
+              <Camera className='w-4 h-4' />
+            </div>
           </div>
         </div>
 
-        {/* Input Display Name */}
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontSize: '13px', color: '#bbb', marginBottom: '6px' }}>Display name</label>
-          <input 
-            type="text" 
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            style={{ width: '100%', padding: '10px', background: '#121216', border: '1px solid #333', borderRadius: '6px', color: 'white', boxSizing: 'border-box' }}
-          />
-        </div>
+        {/* Form Input Data */}
+        <div className='space-y-4'>
+          {/* Display Name */}
+          <div className='flex flex-col rounded-xl bg-slate-900/60 p-3 border border-slate-800 focus-within:border-teal-500 transition-colors'>
+            <label className='text-xs font-medium text-slate-400 mb-1'>Display name</label>
+            <input
+              type='text'
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className='bg-transparent text-slate-100 outline-none text-sm font-medium'
+            />
+          </div>
 
-        {/* Input Username */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '13px', color: '#bbb', marginBottom: '6px' }}>Username</label>
-          <input 
-            type="text" 
-            value={username}
-            placeholder="bintangingaming"
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: '100%', padding: '10px', background: '#121216', border: '1px solid #333', borderRadius: '6px', color: 'white', boxSizing: 'border-box' }}
-          />
-          <p style={{ fontSize: '11px', color: '#777', marginTop: '5px' }}>Your profile helps people recognize you in group chats.</p>
+          {/* Username */}
+          <div className='flex flex-col rounded-xl bg-slate-900/60 p-3 border border-slate-800 focus-within:border-teal-500 transition-colors'>
+            <label className='text-xs font-medium text-slate-400 mb-1'>Username</label>
+            <input
+              type='text'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className='bg-transparent text-slate-100 outline-none text-sm font-medium'
+            />
+          </div>
+
+          {/* Elemen Kelas / Bio (Tetap Dipertahankan) */}
+          <div className='flex flex-col rounded-xl bg-slate-900/60 p-3 border border-slate-800 focus-within:border-teal-500 transition-colors'>
+            <label className='text-xs font-medium text-slate-400 mb-1'>Kelas / Bio</label>
+            <input
+              type='text'
+              value={kelasBio}
+              onChange={(e) => setKelasBio(e.target.value)}
+              className='bg-transparent text-slate-100 outline-none text-sm font-medium'
+            />
+          </div>
+
+          <p className='text-xs text-slate-400 px-1 pt-1'>
+            Your profile helps people recognize you in group chats.
+          </p>
         </div>
 
         {/* Tombol Aksi (Cancel & Save) */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '25px' }}>
-          <button 
+        <div className='mt-6 flex items-center justify-end space-x-3 pt-2'>
+          <button
             onClick={onClose}
-            style={{ padding: '8px 18px', background: 'transparent', border: '1px solid #444', borderRadius: '6px', color: 'white', cursor: 'pointer' }}
+            className='rounded-full px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors'
           >
             Cancel
           </button>
-          <button 
+          <button
             onClick={handleSave}
-            disabled={loading}
-            style={{ padding: '8px 22px', background: 'white', border: 'none', borderRadius: '6px', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}
+            className='rounded-full bg-slate-100 px-6 py-2.5 text-sm font-medium text-slate-950 hover:bg-white transition-colors shadow-lg'
           >
-            {loading ? 'Saving...' : 'Save'}
+            Save
           </button>
         </div>
+
       </div>
     </div>
   )
