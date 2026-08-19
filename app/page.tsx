@@ -10,23 +10,23 @@ const App: FC<IMainProps> = ({
   params,
 }: any) => {
   // State buat ngontrol popup login (buka/tutup)
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(true)
 
   return (
     <>
       {/* Komponen utama LUMI kamu */}
       <Main params={params} />
 
-      {/* 
-        Contoh: Kalau komponen Main kamu punya tombol "Upload" atau "Edit Profil", 
-        kamu bisa lempar fungsi "setIsAuthModalOpen(true)" ke dalamnya 
+      {/*
+        Contoh: Kalau komponen Main kamu punya tombol "Upload" atau "Edit Profil",
+        kamu bisa lempar fungsi "setIsAuthModalOpen(true)" ke dalamnya
         atau dipasang di sini.
       */}
 
       {/* Komponen Popup Login */}
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </>
   )
