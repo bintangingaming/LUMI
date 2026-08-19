@@ -17,7 +17,8 @@ const App: FC<IMainProps> = ({
     <>
       {/* 2. Tambahkan AuthButtons di pojok kanan atas */}
       {/* Tambahkan padding-right (pr-8) atau atur jaraknya dari kanan */}
-<div className="flex items-center">
+{/* Ganti posisi absolute dan posisikan di kanan atas layout utama */}
+<div className="absolute top-4 right-6 z-50 flex items-center">
   <AuthButtons onOpenModal={() => setIsAuthModalOpen(true)} />
 </div>
 
