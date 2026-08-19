@@ -22,6 +22,7 @@ import AppUnavailable from '@/app/components/app-unavailable'
 import { API_KEY, APP_ID, APP_INFO, isShowPrompt, promptTemplate } from '@/config'
 import type { Annotation as AnnotationType } from '@/types/log'
 import { addFileInfos, sortAgentSorts } from '@/utils/tools'
+import EditProfileModal from '@/app/components/EditProfileModal' // <-- 1. Import EditProfileModal di sini
 
 export interface IMainProps {
   params: any
@@ -41,6 +42,10 @@ const Main: FC<IMainProps> = () => {
   const [promptConfig, setPromptConfig] = useState<PromptConfig | null>(null)
   const [inited, setInited] = useState<boolean>(false)
   const [isShowSidebar, { setTrue: showSidebar, setFalse: hideSidebar }] = useBoolean(false)
+  
+  // State buat ngontrol popup edit profil (buka/tutup)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false) // <-- 2. Tambah state ini
+
   const [visionConfig, setVisionConfig] = useState<VisionSettings | undefined>({
     enabled: false,
     number_limits: 2,
@@ -102,8 +107,6 @@ const Main: FC<IMainProps> = () => {
   const createNewChat = (customInputs?: Record<string, any>) => {
     const targetInputs = customInputs || currInputs || newConversationInputs
 
-    // Ganti '-1' dengan timestamp unik agar setiap klik "Chat Baru" 
-    // langsung muncul sebagai baris baru di sidebar!
     const newTempId = `temp-${Date.now()}`
 
     setConversationList(produce(conversationList, (draft) => {
@@ -116,7 +119,6 @@ const Main: FC<IMainProps> = () => {
       })
     }))
 
-    // Kembalikan ID baru ini agar bisa langsung di-set sebagai currConversationId
     return newTempId
   }
 
@@ -159,7 +161,6 @@ const Main: FC<IMainProps> = () => {
       })
     }
     else {
-      // Ambil data yang tersimpan dari localStorage atau currInputs
       let savedInputs: Record<string, any> | null = null
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('user_saved_inputs')
@@ -211,7 +212,6 @@ const Main: FC<IMainProps> = () => {
       if (typeof window !== 'undefined') localStorage.removeItem('user_saved_inputs');
       setCurrInputs({});
       
-      // Panggil createNewChat dan ambil ID uniknya (misal: temp-171... )
       targetId = createNewChat();
       setConversationIdChangeBecauseOfNew(true);
     } 
@@ -690,6 +690,8 @@ const Main: FC<IMainProps> = () => {
           </div>
         )}
         <div className='flex-grow flex flex-col h-[calc(100vh_-_3rem)] overflow-y-auto'>
+          {/* Tambahkan elemen tombol Edit Profil di sini atau teruskan prop onOpenEditProfile jika dibutuhkan */}
+          
           <ConfigSence
             conversationName={conversationName}
             hasSetInputs={hasSetInputs}
@@ -717,6 +719,12 @@ const Main: FC<IMainProps> = () => {
           )}
         </div>
       </div>
+
+      {/* 3. Komponen EditProfileModal dipasang di bagian paling bawah sebelum penutup div utama */}
+      <EditProfileModal 
+        isOpen={isEditProfileOpen} 
+        onClose={() => setIsEditProfileOpen(false)} 
+      />
     </div>
   )
 }
