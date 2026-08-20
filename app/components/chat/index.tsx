@@ -84,6 +84,7 @@ const Chat: FC<IChatProps> = ({
       queryRef.current = ''
     }
   }, [controlClearQuery])
+
   const {
     files,
     onUpload,
@@ -150,7 +151,7 @@ const Chat: FC<IChatProps> = ({
     <div className={cn(!feedbackDisabled && 'px-3.5', 'h-full')}>
       {/* Chat List */}
       <div className="h-full space-y-[30px]">
-        {chatList.map((item) => {
+        {chatList && chatList.map((item) => {
           if (item.isAnswer) {
             const isLast = item.id === chatList[chatList.length - 1].id
             return <Answer
@@ -180,7 +181,7 @@ const Chat: FC<IChatProps> = ({
           <div className='fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 pc:ml-[122px] tablet:ml-[96px] mobile:ml-0 pc:w-[794px] tablet:w-[794px] max-w-full mobile:w-full px-3.5 pb-4'>
             <div className='p-[5.5px] max-h-[150px] bg-slate-900/80 backdrop-blur-xl border-[1.5px] border-slate-700/80 rounded-xl overflow-y-auto shadow-2xl transition-all'>
               {
-                visionConfig?.enabled && (
+                visionConfig?.enabled && visionConfig?.number_limits && (
                   <>
                     <div className='absolute bottom-2 left-2 flex items-center'>
                       <ChatImageUploader
@@ -237,7 +238,10 @@ const Chat: FC<IChatProps> = ({
                     </div>
                   }
                 >
-                  <div className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md transition-opacity hover:opacity-80`}></div>
+                  <div 
+                    onClick={handleSend}
+                    className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md transition-opacity hover:opacity-80`}
+                  ></div>
                 </Tooltip>
               </div>
             </div>
