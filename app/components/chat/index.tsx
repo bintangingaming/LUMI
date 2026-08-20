@@ -9,15 +9,8 @@ import Answer from './answer'
 import Question from './question'
 import type { FeedbackFunc } from './type'
 import type { ChatItem, VisionFile, VisionSettings } from '@/types/app'
-import { TransferMethod } from '@/types/app'
 import Tooltip from '@/app/components/base/tooltip'
 import Toast from '@/app/components/base/toast'
-import ChatImageUploader from '@/app/components/base/image-uploader/chat-image-uploader'
-import ImageList from '@/app/components/base/image-uploader/image-list'
-import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
-import FileUploaderInAttachmentWrapper from '@/app/components/base/file-uploader-in-attachment'
-import type { FileEntity, FileUpload } from '@/app/components/base/file-uploader-in-attachment/types'
-import { getProcessedFiles } from '@/app/components/base/file-uploader-in-attachment/utils'
 
 export interface IChatProps {
   chatList: ChatItem[]
@@ -30,7 +23,7 @@ export interface IChatProps {
   isResponding?: boolean
   controlClearQuery?: number
   visionConfig?: VisionSettings
-  fileConfig?: FileUpload
+  fileConfig?: any
 }
 
 const Chat: FC<IChatProps> = ({
@@ -43,8 +36,6 @@ const Chat: FC<IChatProps> = ({
   useCurrentUserAvatar,
   isResponding,
   controlClearQuery,
-  visionConfig,
-  fileConfig,
 }) => {
   const { t } = useTranslation()
   const { notify } = Toast
@@ -79,50 +70,15 @@ const Chat: FC<IChatProps> = ({
     }
   }, [controlClearQuery])
 
-  const {
-    files,
-    onUpload,
-    onRemove,
-    onReUpload,
-    onImageLinkLoadError,
-    onImageLinkLoadSuccess,
-    onClear,
-  } = useImageFiles()
-
-  const [attachmentFiles, setAttachmentFiles] = React.useState<FileEntity[]>([])
-
   const handleSend = () => {
     if (!valid() || (checkCanSend && !checkCanSend())) { return }
-    const hasPendingImageUploads = files.some(file => file.progress !== -1 && file.progress < 100)
-    const hasPendingAttachmentUploads = attachmentFiles.some(file => file.progress !== -1 && file.progress < 100)
     
-    if (hasPendingImageUploads || hasPendingAttachmentUploads) {
-      logError(t('app.errorMessage.waitForFileUpload'))
-      return
-    }
-
-    const imageFiles: VisionFile[] = files.filter(file => file.progress !== -1).map(fileItem => ({
-      type: 'image',
-      transfer_method: fileItem.type,
-      url: fileItem.url,
-      upload_file_id: fileItem.fileId,
-    }))
+    // Kirim pesan teks murni tanpa file (aman dari error uploader)
+    onSend(queryRef.current, [])
     
-    // Amankan pengambilan file proses agar tidak error
-    const docAndOtherFiles: VisionFile[] = attachmentFiles.length > 0 ? getProcessedFiles(attachmentFiles) : []
-    const combinedFiles: VisionFile[] = [...imageFiles, ...docAndOtherFiles]
-    
-    onSend(queryRef.current, combinedFiles)
-    
-    if (!files.find(item => item.type === TransferMethod.local_file && !item.fileId)) {
-      if (files.length) { onClear() }
-      if (!isResponding) {
-        setQuery('')
-        queryRef.current = ''
-      }
-    }
-    if (!attachmentFiles.find(item => item.transferMethod === TransferMethod.local_file && !item.uploadedId)) { 
-      setAttachmentFiles([]) 
+    if (!isResponding) {
+      setQuery('')
+      queryRef.current = ''
     }
   }
 
@@ -148,10 +104,6 @@ const Chat: FC<IChatProps> = ({
     queryRef.current = suggestion
     handleSend()
   }
-
-  // Pengaman Render Config (Mencegah null / undefined properties)
-  const isVisionEnabled = visionConfig && typeof visionConfig === 'object' && visionConfig.enabled && visionConfig.number_limits
-  const isFileEnabled = fileConfig && typeof fileConfig === 'object' && fileConfig.enabled
 
   return (
     <div className={cn(!feedbackDisabled && 'px-3.5', 'h-full')}>
@@ -181,51 +133,13 @@ const Chat: FC<IChatProps> = ({
         })}
       </div>
 
-      {/* Input Box / Keyboard */}
+      {/* Input Box Bersih Tanpa Uploader */}
       {
         !isHideSendInput && (
           <div className='fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 pc:ml-[122px] tablet:ml-[96px] mobile:ml-0 pc:w-[794px] tablet:w-[794px] max-w-full mobile:w-full px-3.5 pb-4'>
             <div className='p-[5.5px] max-h-[150px] bg-slate-900/80 backdrop-blur-xl border-[1.5px] border-slate-700/80 rounded-xl overflow-y-auto shadow-2xl transition-all'>
-              
-              {/* Image Uploader Guard */}
-              {isVisionEnabled && (
-                <>
-                  <div className='absolute bottom-2 left-2 flex items-center'>
-                    <ChatImageUploader
-                      settings={visionConfig}
-                      onUpload={onUpload}
-                      disabled={files.length >= (visionConfig?.number_limits || 0)}
-                    />
-                    <div className='mx-1 w-[1px] h-4 bg-slate-700/50' />
-                  </div>
-                  <div className='pl-[52px]'>
-                    <ImageList
-                      list={files}
-                      onRemove={onRemove}
-                      onReUpload={onReUpload}
-                      onImageLinkLoadSuccess={onImageLinkLoadSuccess}
-                      onImageLinkLoadError={onImageLinkLoadError}
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* File Attachment Guard */}
-              {isFileEnabled && (
-                <div className={`${isVisionEnabled ? 'pl-[52px]' : ''} mb-1`}>
-                  <FileUploaderInAttachmentWrapper
-                    fileConfig={fileConfig}
-                    value={attachmentFiles}
-                    onChange={setAttachmentFiles}
-                  />
-                </div>
-              )}
-
               <Textarea
-                className={`
-                  block w-full px-2 pr-[118px] py-[7px] leading-5 max-h-none text-base text-slate-100 placeholder-slate-400 bg-transparent outline-none appearance-none resize-none
-                  ${isVisionEnabled ? 'pl-12' : ''}
-                `}
+                className='block w-full px-3 pr-[118px] py-[7px] leading-5 max-h-none text-base text-slate-100 placeholder-slate-400 bg-transparent outline-none appearance-none resize-none'
                 value={query}
                 onChange={handleContentChange}
                 onKeyUp={handleKeyUp}
