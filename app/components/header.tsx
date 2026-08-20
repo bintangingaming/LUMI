@@ -62,28 +62,19 @@ const Header: FC<IHeaderProps> = ({
     window.location.reload()
   }
 
-  // Deklarasi variabel avatar & nama
+  // Ambil avatar dengan aman pakai optional chaining (?.)
   let userAvatar = 'https://github.com/shadcn.png'
-  if (user) {
-    if (user.user_metadata) {
-      if (user.user_metadata.avatar_url) {
-        userAvatar = user.user_metadata.avatar_url
-      } else if (user.user_metadata.picture) {
-        userAvatar = user.user_metadata.picture
-      }
-    }
+  const metadataAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
+  if (metadataAvatar) {
+    userAvatar = metadataAvatar
   }
 
+  // Ambil nama dengan aman
   let userName = 'Pengguna'
-  if (user) {
-    if (user.user_metadata) {
-      if (user.user_metadata.full_name) {
-        userName = user.user_metadata.full_name
-      }
-    }
-    if (userName === 'Pengguna' && user.email) {
-      userName = user.email.split('@')[0]
-    }
+  if (user?.user_metadata?.full_name) {
+    userName = user.user_metadata.full_name
+  } else if (user?.email) {
+    userName = user.email.split('@')[0]
   }
 
   // Konten kanan: Dua tombol terpisah (Login & Sign Up) kalau belum login
@@ -127,7 +118,7 @@ const Header: FC<IHeaderProps> = ({
           <div className="absolute right-0 mt-2 w-44 bg-[#0b0f19] border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 text-xs text-slate-200">
             <div className="px-3 py-2 border-b border-slate-800/80 mb-1">
               <p className="font-medium text-white truncate">{userName}</p>
-              <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+              <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
             </div>
             <button
               onClick={handleLogout}
