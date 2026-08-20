@@ -23,6 +23,7 @@ import { API_KEY, APP_ID, APP_INFO, isShowPrompt, promptTemplate } from '@/confi
 import type { Annotation as AnnotationType } from '@/types/log'
 import { addFileInfos, sortAgentSorts } from '@/utils/tools'
 import EditProfileModal from '@/app/components/EditProfileModal'
+import { supabase } from '@/app/lib/supabase' // 👈 Tambahkan import supabase
 
 export interface IMainProps {
   params: any
@@ -35,16 +36,49 @@ const Main: FC<IMainProps> = () => {
   const hasSetAppConfig = APP_ID && API_KEY
 
   /*
-  * app info
-  */
+   * app info
+   */
   const [appUnavailable, setAppUnavailable] = useState<boolean>(false)
   const [isUnknownReason, setIsUnknownReason] = useState<boolean>(false)
   const [promptConfig, setPromptConfig] = useState<PromptConfig | null>(null)
   const [inited, setInited] = useState<boolean>(false)
   const [isShowSidebar, { setTrue: showSidebar, setFalse: hideSidebar }] = useBoolean(false)
 
-  // State buat ngontrol popup edit profil (buka/tutup)
+  // State untuk Supabase User & Modals
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>({})
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+
+  // 🔄 Cek Session Supabase saat pertama kali load
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null)
+      if (session?.user) {
+        setProfile({
+          displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+          username: session.user.email?.split('@')[0] || '',
+          avatar: session.user.user_metadata?.avatar_url || 'https://github.com/shadcn.png',
+          grade: '',
+        })
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+      if (session?.user) {
+        setProfile({
+          displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+          username: session.user.email?.split('@')[0] || '',
+          avatar: session.user.user_metadata?.avatar_url || 'https://github.com/shadcn.png',
+          grade: '',
+        })
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const [visionConfig, setVisionConfig] = useState<VisionSettings | undefined>({
     enabled: false,
@@ -66,8 +100,8 @@ const Main: FC<IMainProps> = () => {
   }, [])
 
   /*
-  * conversation info
-  */
+   * conversation info
+   */
   const {
     conversationList,
     setConversationList,
@@ -81,15 +115,12 @@ const Main: FC<IMainProps> = () => {
     newConversationInputs,
     resetNewConversationInputs,
     setCurrInputs,
-    newConversationInfo,
-    setNewConversationInfo,
     setExistConversationInfo,
   } = useConversation()
 
   const [conversationIdChangeBecauseOfNew, setConversationIdChangeBecauseOfNew, getConversationIdChangeBecauseOfNew] = useGetState(false)
   const [isChatStarted, { setTrue: setChatStarted, setFalse: setChatNotStarted }] = useBoolean(false)
 
-  // 🔄 AUTO-LOAD: Ambil data tersimpan dari browser saat web baru pertama kali dibuka
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedInputs = localStorage.getItem('user_saved_inputs')
@@ -97,7 +128,7 @@ const Main: FC<IMainProps> = () => {
         try {
           const parsedInputs = JSON.parse(savedInputs)
           setCurrInputs(parsedInputs)
-          setChatStarted() // langsung lewati tampilan form
+          setChatStarted()
         } catch (e) {
           console.error('Error loading saved inputs:', e)
         }
@@ -107,7 +138,6 @@ const Main: FC<IMainProps> = () => {
 
   const createNewChat = (customInputs?: Record<string, any>) => {
     const targetInputs = customInputs || currInputs || newConversationInputs
-
     const newTempId = `temp-${Date.now()}`
 
     setConversationList(produce(conversationList, (draft) => {
@@ -123,12 +153,9 @@ const Main: FC<IMainProps> = () => {
     return newTempId
   }
 
-  // 💾 SIMPAN: Simpan data form ke localStorage saat klik "Start Chat"
   const handleStartChat = (inputs: Record<string, any>, aiSettings?: { mode: string, memory: string }) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user_saved_inputs', JSON.stringify(inputs))
-
-      // Kalau ada pengaturan AI yang dikirim, simpan juga ke localStorage
       if (aiSettings) {
         localStorage.setItem('lumi_ai_settings', JSON.stringify(aiSettings))
       }
@@ -208,7 +235,6 @@ const Main: FC<IMainProps> = () => {
 
   useEffect(handleConversationSwitch, [currConversationId, inited])
 
-  // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
   const handleConversationIdChange = (id: string) => {
     setChatNotStarted()
     setChatList([])
@@ -230,9 +256,6 @@ const Main: FC<IMainProps> = () => {
     hideSidebar()
   }
 
-  /*
-  * chat info
-  */
   const [chatList, setChatList, getChatList] = useGetState<ChatItem[]>([])
   const chatListDomRef = useRef<HTMLDivElement>(null)
 
@@ -269,7 +292,6 @@ const Main: FC<IMainProps> = () => {
     return []
   }
 
-  // Init
   useEffect(() => {
     if (!hasSetAppConfig) {
       setAppUnavailable(true)
@@ -289,7 +311,8 @@ const Main: FC<IMainProps> = () => {
 
         const { user_input_form, opening_statement: introduction, file_upload, system_parameters, suggested_questions = [] }: any = appParams
         setLocaleOnClient(APP_INFO.default_language, true)
-        setNewConversationInfo({
+        // Ubah bagian ini:
+        setExistConversationInfo({
           name: t('app.chat.newChatDefaultName'),
           introduction,
           suggested_questions,
@@ -395,7 +418,6 @@ const Main: FC<IMainProps> = () => {
     }
   }
 
-  // Kirim pesan beserta inputs form
   const handleSend = async (message: string, files?: VisionFile[]) => {
     if (isResponding) {
       notify({ type: 'info', message: t('app.errorMessage.waitForResponse') })
@@ -675,7 +697,6 @@ const Main: FC<IMainProps> = () => {
         list={conversationList}
         onCurrentIdChange={handleConversationIdChange}
         currentId={currConversationId}
-        copyRight={APP_INFO.copyright || APP_INFO.title}
       />
     )
   }
@@ -691,7 +712,15 @@ const Main: FC<IMainProps> = () => {
         isMobile={isMobile}
         onShowSideBar={showSidebar}
         onCreateNewChat={() => handleConversationIdChange('-1')}
-        onOpenAuthModal={() => setIsEditProfileOpen(true)} // <-- Hubungkan ke fungsi pembuka modal
+        onOpenAuthModal={async () => {
+          // Contoh fungsi login Google lewat Supabase saat tombol Login/Sign Up ditekan
+          await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin,
+            },
+          })
+        }}
       />
       <div className="flex rounded-t-2xl bg-slate-900 overflow-hidden border border-slate-800">
         {!isMobile && renderSidebar()}
@@ -734,6 +763,12 @@ const Main: FC<IMainProps> = () => {
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
+        profile={profile}
+        setProfile={setProfile}
+        onSave={() => {
+          setIsEditProfileOpen(false)
+          Toast.notify({ type: 'success', message: 'Profile saved!' })
+        }}
       />
     </div>
   )

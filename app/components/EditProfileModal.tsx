@@ -2,7 +2,26 @@
 import React, { useRef } from 'react'
 import { Camera } from 'lucide-react'
 
-export default function EditProfileModal({ isOpen, onClose, profile = {}, setProfile, onSave }) {
+interface EditProfileModalProps {
+  isOpen: boolean
+  onClose: () => void
+  profile: {
+    avatar?: string
+    displayName?: string
+    username?: string
+    grade?: string
+  }
+  setProfile: React.Dispatch<React.SetStateAction<any>>
+  onSave: () => void
+}
+
+export default function EditProfileModal({
+  isOpen,
+  onClose,
+  profile = {},
+  setProfile,
+  onSave,
+}: EditProfileModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!isOpen) { return null }
