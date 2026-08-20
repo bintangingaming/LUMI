@@ -2,7 +2,7 @@
 import type { FC } from 'react'
 import React from 'react'
 import cn from 'classnames'
-import { Markdown } from '@/app/components/base/markdown' // Sesuaikan path foldernya jika berbeda
+import { Markdown } from '@/app/components/base/markdown'
 
 export interface IAnswerProps {
   item: any
@@ -17,6 +17,9 @@ const Answer: FC<IAnswerProps> = ({
   isResponding,
   suggestionClick,
 }) => {
+  // Ambil teks dengan aman, baik dari chat baru maupun chat lama
+  const content = item?.content || item?.message || ''
+
   return (
     <div className='flex justify-start mb-6 group'>
       <div className='flex items-start max-w-[85%] gap-3'>
@@ -28,9 +31,8 @@ const Answer: FC<IAnswerProps> = ({
         {/* Bubble Chat Content */}
         <div className='flex flex-col space-y-3 w-full'>
           <div className='px-5 py-4 bg-slate-800/90 text-slate-100 rounded-2xl rounded-tl-none border border-slate-700/80 shadow-xl backdrop-blur-xl text-sm leading-relaxed break-words'>
-            {item.content ? (
-              // Pakai komponen Markdown yang sudah kamu temukan!
-              <Markdown content={item.content} />
+            {content ? (
+              <Markdown content={content} />
             ) : (
               isResponding && <span className='animate-pulse text-indigo-400'>Sedang berpikir...</span>
             )}
