@@ -86,14 +86,22 @@ const Header: FC<IHeaderProps> = ({
     }
   }
 
-  // Konten kanan: Kalau belum login, tampilkan tombol Login / Sign In yang manggil modal
+  // Konten kanan: Dua tombol terpisah (Login & Sign Up) kalau belum login
   let rightContent = (
-    <button
-      onClick={() => onOpenAuthModal?.()}
-      className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-semibold px-4 py-2 rounded-xl border border-slate-700 transition shadow-sm cursor-pointer"
-    >
-      <span>Login / Sign In</span>
-    </button>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => onOpenAuthModal?.()}
+        className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl border border-slate-700 transition-all cursor-pointer"
+      >
+        Login
+      </button>
+      <button
+        onClick={() => onOpenAuthModal?.()}
+        className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-600/20 transition-all cursor-pointer"
+      >
+        Sign Up
+      </button>
+    </div>
   )
 
   if (user) {
