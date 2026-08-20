@@ -102,8 +102,8 @@ const Chat: FC<IChatProps> = ({
   const handleSend = () => {
     if (!valid() || (checkCanSend && !checkCanSend())) { return }
 
-    // Kirim query beserta file yang dipilih ke onSend
-    onSend(queryRef.current, selectedFiles)
+    // Kirim pesan teks dengan file kosong [] agar tidak ditolak backend (Error 400)
+    onSend(queryRef.current, [])
 
     if (!isResponding) {
       setQuery('')
