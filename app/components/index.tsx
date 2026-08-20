@@ -778,7 +778,7 @@ const Main: FC<IMainProps> = () => {
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
         profile={profile}
-        setprofile={setProfile}
+        setProfile={setProfile}
         user={user}
         onSave={() => {
           setIsEditProfileOpen(false)
