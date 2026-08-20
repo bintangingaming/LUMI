@@ -9,14 +9,12 @@ import { atelierHeathLight } from 'react-syntax-highlighter/dist/esm/styles/hljs
 
 export function Markdown(props: { content: string }) {
   return (
-    <div className="markdown-body !bg-transparent text-slate-100" style={{ color: '#f8fafc' }}>
+    <div className="markdown-body">
       <ReactMarkdown
         remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
-        rehypePlugins={[
-          RehypeKatex,
-        ]}
+        rehypePlugins={[RehypeKatex]}
         components={{
-          code({ inline, className, children, ...props }: any) {
+          code({ node, inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '')
             return (!inline && match)
               ? (
