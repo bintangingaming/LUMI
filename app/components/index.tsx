@@ -404,16 +404,17 @@ const Main: FC<IMainProps> = () => {
     if (currInputs) {
       Object.keys(currInputs).forEach((key) => {
         const value = currInputs[key]
-        if (value.supportFileType) { toServerInputs[key] = transformToServerFile(value) }
-        else if (value[0]?.supportFileType) { toServerInputs[key] = value.map((item: any) => transformToServerFile(item)) }
-        else { toServerInputs[key] = value }
+        // Pengaman ekstra ketat agar tidak error 'supportFileType' pada chat lama
+        if (value && typeof value === 'object' && 'supportFileType' in value && value.supportFileType) { 
+          toServerInputs[key] = transformToServerFile(value) 
+        }
+        else if (Array.isArray(value) && value[0] && typeof value[0] === 'object' && 'supportFileType' in value[0] && value[0].supportFileType) { 
+          toServerInputs[key] = value.map((item: any) => transformToServerFile(item)) 
+        }
+        else { 
+          toServerInputs[key] = value 
+        }
       })
-    }
-
-    const data: Record<string, any> = {
-      inputs: toServerInputs,
-      query: message,
-      conversation_id: isNewConversation ? null : currConversationId,
     }
 
     if (files && files?.length > 0) {
