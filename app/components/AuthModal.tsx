@@ -2,7 +2,7 @@
 import type { FC } from 'react'
 import React, { useState } from 'react'
 import { XMarkIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
-import { supabase } from '@/lib/supabase' // <-- 1. Import supabase client
+import { supabase } from '@/app/lib/supabase'
 
 export interface IAuthModalProps {
   isOpen: boolean
