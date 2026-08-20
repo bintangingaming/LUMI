@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import cn from 'classnames'
 import { useTranslation } from 'react-i18next'
 import Textarea from 'rc-textarea'
+import { PaperClipIcon } from '@heroicons/react/24/outline'
 import s from './style.module.css'
 import Answer from './answer'
 import Question from './question'
@@ -40,6 +41,7 @@ const Chat: FC<IChatProps> = ({
   const { t } = useTranslation()
   const { notify } = Toast
   const isUseInputMethod = useRef(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [query, setQuery] = React.useState('')
   const queryRef = useRef('')
@@ -72,10 +74,9 @@ const Chat: FC<IChatProps> = ({
 
   const handleSend = () => {
     if (!valid() || (checkCanSend && !checkCanSend())) { return }
-    
-    // Kirim pesan teks murni tanpa file (aman dari error uploader)
+
     onSend(queryRef.current, [])
-    
+
     if (!isResponding) {
       setQuery('')
       queryRef.current = ''
@@ -103,6 +104,11 @@ const Chat: FC<IChatProps> = ({
     setQuery(suggestion)
     queryRef.current = suggestion
     handleSend()
+  }
+
+  // Handler opsional ketika ikon klip kertas diklik
+  const handleAttachClick = () => {
+    fileInputRef.current?.click()
   }
 
   return (
@@ -133,23 +139,44 @@ const Chat: FC<IChatProps> = ({
         })}
       </div>
 
-      {/* Input Box Bersih Tanpa Uploader */}
+      {/* Input Box: Angka 0 Dihapus & Tombol Klip Kertas Ditambahkan */}
       {
         !isHideSendInput && (
           <div className='fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 pc:ml-[122px] tablet:ml-[96px] mobile:ml-0 pc:w-[794px] tablet:w-[794px] max-w-full mobile:w-full px-3.5 pb-4'>
-            <div className='p-[5.5px] max-h-[150px] bg-slate-900/80 backdrop-blur-xl border-[1.5px] border-slate-700/80 rounded-xl overflow-y-auto shadow-2xl transition-all'>
+            <div className='p-[5.5px] max-h-[150px] bg-slate-900/80 backdrop-blur-xl border-[1.5px] border-slate-700/80 rounded-xl overflow-y-auto shadow-2xl transition-all relative'>
               <Textarea
-                className='block w-full px-3 pr-[118px] py-[7px] leading-5 max-h-none text-base text-slate-100 placeholder-slate-400 bg-transparent outline-none appearance-none resize-none'
+                className='block w-full px-3 pr-[88px] py-[7px] leading-5 max-h-none text-base text-slate-100 placeholder-slate-400 bg-transparent outline-none appearance-none resize-none'
                 value={query}
                 onChange={handleContentChange}
                 onKeyUp={handleKeyUp}
                 onKeyDown={handleKeyDown}
+                placeholder="Ketik pesan..."
                 autoSize
               />
-              <div className="absolute bottom-2 right-6 flex items-center h-8">
-                <div className={`${s.count} mr-3 h-5 leading-5 text-sm bg-slate-800 text-slate-400 border border-slate-700/50 px-2 rounded`}>
-                  {query.trim().length}
-                </div>
+
+              {/* Input file tersembunyi untuk lampiran */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={(e) => {
+                  // Tambahkan logika handle file lokal di sini jika diperlukan
+                  console.log(e.target.files)
+                }}
+              />
+
+              <div className="absolute bottom-2 right-4 flex items-center space-x-2 h-8">
+                {/* Tombol Klip Kertas */}
+                <button
+                  type="button"
+                  onClick={handleAttachClick}
+                  className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 rounded-lg transition cursor-pointer"
+                  title="Lampirkan file"
+                >
+                  <PaperClipIcon className="w-5 h-5" />
+                </button>
+
+                {/* Tombol Kirim (Pesawat Kertas) */}
                 <Tooltip
                   selector='send-tip'
                   htmlContent={
@@ -159,7 +186,7 @@ const Chat: FC<IChatProps> = ({
                     </div>
                   }
                 >
-                  <div 
+                  <div
                     onClick={handleSend}
                     className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md transition-opacity hover:opacity-80`}
                   ></div>
