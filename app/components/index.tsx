@@ -49,6 +49,20 @@ const Main: FC<IMainProps> = () => {
   const [profile, setProfile] = useState<any>({})
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
 
+  const handleProfileClick = async () => {
+    if (!user) {
+    // Kalau belum login, buka modal login Google
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      })
+    } else {
+    // Kalau sudah login, buka modal Edit Profile dengan form lengkap
+      setIsEditProfileOpen(true)
+    }
+  }
   // 🔄 Cek Session Supabase saat pertama kali load
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -764,7 +778,8 @@ const Main: FC<IMainProps> = () => {
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
         profile={profile}
-        setProfile={setProfile}
+        setprofile={setProfile}
+        user={user}
         onSave={() => {
           setIsEditProfileOpen(false)
           Toast.notify({ type: 'success', message: 'Profile saved!' })
