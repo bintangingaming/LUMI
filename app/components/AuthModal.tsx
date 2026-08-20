@@ -12,32 +12,31 @@ export interface IAuthModalProps {
 const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
-  if (!isOpen) return null
+  if (!isOpen) { return null }
 
-  // 2. Fungsi Login dengan Google via Supabase
+  // Fungsi Login dengan Google via Supabase
   const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      })
-      if (error) throw error
-    } catch (error: any) {
-      console.error("Gagal login Google:", error.message)
-      alert("Gagal login: " + error.message)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    })
+    if (error) {
+      setMessage(`Gagal login: ${error.message}`)
     }
   }
 
-  // 3. Fungsi Login dengan Magic Link (Email) via Supabase
+  // Fungsi Login dengan Magic Link (Email) via Supabase
   const handleEmailLogin = async () => {
     if (!email) {
-      alert("Masukkan email terlebih dahulu!")
+      setMessage('Masukkan email terlebih dahulu!')
       return
     }
     setLoading(true)
+    setMessage(null)
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -45,12 +44,13 @@ const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
           emailRedirectTo: `${window.location.origin}/`,
         },
       })
-      if (error) throw error
-      alert(`Link login telah dikirim ke ${email}. Cek inbox/spam email kamu ya!`)
-      onClose()
+      if (error) { throw error }
+      setMessage(`Link login telah dikirim ke ${email}. Cek inbox/spam email kamu!`)
+      setTimeout(() => {
+        onClose()
+      }, 2000)
     } catch (error: any) {
-      console.error("Gagal kirim email:", error.message)
-      alert("Gagal: " + error.message)
+      setMessage(`Gagal: ${error.message}`)
     } finally {
       setLoading(false)
     }
@@ -60,7 +60,7 @@ const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
       {/* Kotak Modal */}
       <div className="relative w-full max-w-md p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl text-slate-100">
-        
+
         {/* Tombol X di Pojok Kanan Atas */}
         <button
           onClick={onClose}
@@ -75,6 +75,13 @@ const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
           <p className="text-xs text-slate-400 mt-1">Akses semua fitur cerdas LUMI dengan masuk ke akunmu.</p>
         </div>
 
+        {/* Notifikasi Pesan */}
+        {message && (
+          <div className="mb-4 p-3 text-xs bg-slate-800 border border-slate-700 text-slate-200 rounded-xl">
+            {message}
+          </div>
+        )}
+
         {/* Form Email */}
         <div className="space-y-4">
           <div className="relative">
@@ -84,7 +91,7 @@ const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="Masukkan email kamu..."
               className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
             />
