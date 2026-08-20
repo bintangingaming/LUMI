@@ -22,7 +22,7 @@ import AppUnavailable from '@/app/components/app-unavailable'
 import { API_KEY, APP_ID, APP_INFO, isShowPrompt, promptTemplate } from '@/config'
 import type { Annotation as AnnotationType } from '@/types/log'
 import { addFileInfos, sortAgentSorts } from '@/utils/tools'
-import EditProfileModal from '@/app/components/EditProfileModal' // <-- 1. Import EditProfileModal di sini
+import EditProfileModal from '@/app/components/EditProfileModal'
 
 export interface IMainProps {
   params: any
@@ -42,9 +42,9 @@ const Main: FC<IMainProps> = () => {
   const [promptConfig, setPromptConfig] = useState<PromptConfig | null>(null)
   const [inited, setInited] = useState<boolean>(false)
   const [isShowSidebar, { setTrue: showSidebar, setFalse: hideSidebar }] = useBoolean(false)
-  
+
   // State buat ngontrol popup edit profil (buka/tutup)
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false) // <-- 2. Tambah state ini
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
 
   const [visionConfig, setVisionConfig] = useState<VisionSettings | undefined>({
     enabled: false,
@@ -81,6 +81,7 @@ const Main: FC<IMainProps> = () => {
     newConversationInputs,
     resetNewConversationInputs,
     setCurrInputs,
+    newConversationInfo,
     setNewConversationInfo,
     setExistConversationInfo,
   } = useConversation()
@@ -126,7 +127,7 @@ const Main: FC<IMainProps> = () => {
   const handleStartChat = (inputs: Record<string, any>, aiSettings?: { mode: string, memory: string }) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user_saved_inputs', JSON.stringify(inputs))
-      
+
       // Kalau ada pengaturan AI yang dikirim, simpan juga ke localStorage
       if (aiSettings) {
         localStorage.setItem('lumi_ai_settings', JSON.stringify(aiSettings))
@@ -143,7 +144,7 @@ const Main: FC<IMainProps> = () => {
     if (!isNewConversation) { return true }
     return isChatStarted
   })()
-  
+
   const conversationName = currConversationInfo?.name || t('app.chat.newChatDefaultName') as string
   const conversationIntroduction = currConversationInfo?.introduction || ''
   const suggestedQuestions = currConversationInfo?.suggested_questions || []
@@ -209,24 +210,24 @@ const Main: FC<IMainProps> = () => {
 
   // ➕ NEW CHAT: Otomatis pasang data tersimpan saat bikin chat baru & kosongkan chat list lama
   const handleConversationIdChange = (id: string) => {
-    setChatNotStarted() 
-    setChatList([]) 
-    
-    let targetId = id;
+    setChatNotStarted()
+    setChatList([])
+
+    let targetId = id
     if (id === '-1') {
-      if (typeof window !== 'undefined') localStorage.removeItem('user_saved_inputs');
-      setCurrInputs({});
-      
-      targetId = createNewChat();
-      setConversationIdChangeBecauseOfNew(true);
-    } 
+      if (typeof window !== 'undefined') { localStorage.removeItem('user_saved_inputs') }
+      setCurrInputs({})
+
+      targetId = createNewChat()
+      setConversationIdChangeBecauseOfNew(true)
+    }
     else {
-      setConversationIdChangeBecauseOfNew(false);
-      setChatStarted(); 
+      setConversationIdChangeBecauseOfNew(false)
+      setChatStarted()
     }
 
-    setCurrConversationId(targetId, APP_ID);
-    hideSidebar();
+    setCurrConversationId(targetId, APP_ID)
+    hideSidebar()
   }
 
   /*
@@ -251,8 +252,8 @@ const Main: FC<IMainProps> = () => {
   const generateNewChatListWithOpenStatement = (introduction?: string, inputs?: Record<string, any> | null) => {
     let calculatedIntroduction = introduction || conversationIntroduction || ''
     const calculatedPromptVariables = inputs || currInputs || null
-    if (calculatedIntroduction && calculatedPromptVariables) { 
-      calculatedIntroduction = replaceVarWithValues(calculatedIntroduction, promptConfig?.prompt_variables || [], calculatedPromptVariables) 
+    if (calculatedIntroduction && calculatedPromptVariables) {
+      calculatedIntroduction = replaceVarWithValues(calculatedIntroduction, promptConfig?.prompt_variables || [], calculatedPromptVariables)
     }
 
     const openStatement = {
@@ -351,7 +352,7 @@ const Main: FC<IMainProps> = () => {
     let emptyRequiredInput = false
     promptConfig.prompt_variables.forEach((item) => {
       if (item.required && !currInputs[item.key])
-        emptyRequiredInput = true
+      { emptyRequiredInput = true }
     })
 
     if (emptyRequiredInput) {
@@ -404,15 +405,14 @@ const Main: FC<IMainProps> = () => {
     if (currInputs) {
       Object.keys(currInputs).forEach((key) => {
         const value = currInputs[key]
-        // Pengaman ekstra ketat agar tidak error 'supportFileType' pada chat lama
-        if (value && typeof value === 'object' && 'supportFileType' in value && value.supportFileType) { 
-          toServerInputs[key] = transformToServerFile(value) 
+        if (value && typeof value === 'object' && 'supportFileType' in value && value.supportFileType) {
+          toServerInputs[key] = transformToServerFile(value)
         }
-        else if (Array.isArray(value) && value[0] && typeof value[0] === 'object' && 'supportFileType' in value[0] && value[0].supportFileType) { 
-          toServerInputs[key] = value.map((item: any) => transformToServerFile(item)) 
+        else if (Array.isArray(value) && value[0] && typeof value[0] === 'object' && 'supportFileType' in value[0] && value[0].supportFileType) {
+          toServerInputs[key] = value.map((item: any) => transformToServerFile(item))
         }
-        else { 
-          toServerInputs[key] = value 
+        else {
+          toServerInputs[key] = value
         }
       })
     }
@@ -691,6 +691,7 @@ const Main: FC<IMainProps> = () => {
         isMobile={isMobile}
         onShowSideBar={showSidebar}
         onCreateNewChat={() => handleConversationIdChange('-1')}
+        onOpenAuthModal={() => setIsEditProfileOpen(true)} // <-- Hubungkan ke fungsi pembuka modal
       />
       <div className="flex rounded-t-2xl bg-slate-900 overflow-hidden border border-slate-800">
         {!isMobile && renderSidebar()}
@@ -702,8 +703,6 @@ const Main: FC<IMainProps> = () => {
           </div>
         )}
         <div className='flex-grow flex flex-col h-[calc(100vh_-_3rem)] overflow-y-auto'>
-          {/* Tambahkan elemen tombol Edit Profil di sini atau teruskan prop onOpenEditProfile jika dibutuhkan */}
-          
           <ConfigSence
             conversationName={conversationName}
             hasSetInputs={hasSetInputs}
@@ -732,10 +731,9 @@ const Main: FC<IMainProps> = () => {
         </div>
       </div>
 
-      {/* 3. Komponen EditProfileModal dipasang di bagian paling bawah sebelum penutup div utama */}
-      <EditProfileModal 
-        isOpen={isEditProfileOpen} 
-        onClose={() => setIsEditProfileOpen(false)} 
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
       />
     </div>
   )
