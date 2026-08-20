@@ -13,6 +13,7 @@ export interface IHeaderProps {
   isMobile?: boolean
   onShowSideBar?: () => void
   onCreateNewChat?: () => void
+  onOpenAuthModal?: () => void
 }
 
 const Header: FC<IHeaderProps> = ({
@@ -20,6 +21,7 @@ const Header: FC<IHeaderProps> = ({
   isMobile,
   onShowSideBar,
   onCreateNewChat,
+  onOpenAuthModal,
 }) => {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -55,21 +57,12 @@ const Header: FC<IHeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    })
-  }
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.location.reload()
   }
 
-  // Deklarasi variabel pakai if-else murni
+  // Deklarasi variabel avatar & nama
   let userAvatar = 'https://github.com/shadcn.png'
   if (user) {
     if (user.user_metadata) {
@@ -93,13 +86,13 @@ const Header: FC<IHeaderProps> = ({
     }
   }
 
-  // Render komponen kanan pakai if-else murni, TANPA ternary di JSX
+  // Konten kanan: Kalau belum login, tampilkan tombol Login / Sign In yang manggil modal
   let rightContent = (
     <button
-      onClick={handleGoogleLogin}
-      className="flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-900 text-xs font-semibold px-3.5 py-1.5 rounded-full transition shadow-sm cursor-pointer"
+      onClick={() => onOpenAuthModal?.()}
+      className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-semibold px-4 py-2 rounded-xl border border-slate-700 transition shadow-sm cursor-pointer"
     >
-      <span>Masuk Google</span>
+      <span>Login / Sign In</span>
     </button>
   )
 
