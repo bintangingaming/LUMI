@@ -60,3 +60,13 @@ export const updateFeedback = async ({ url, body }: { url: string, body: Feedbac
 export const generationConversationName = async (id: string) => {
   return post(`conversations/${id}/name`, { body: { auto_generate: true } })
 }
+
+// Fungsi baru untuk mengunggah file/gambar ke endpoint Dify
+export const sendFile = async (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return post('files', {
+    body: formData,
+  })
+}

@@ -12,6 +12,7 @@ import type { FeedbackFunc } from './type'
 import type { ChatItem, VisionFile, VisionSettings } from '@/types/app'
 import Tooltip from '@/app/components/base/tooltip'
 import Toast from '@/app/components/base/toast'
+import { sendFile } from '@/service' // Sesuaikan path foldernya jika berbeda
 
 export interface IChatProps {
   chatList: ChatItem[]
@@ -76,27 +77,33 @@ const Chat: FC<IChatProps> = ({
     }
   }, [controlClearQuery])
 
-  // Handler ketika file dipilih dari komputer
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) { return }
 
     const file = files[0]
 
-    const reader = new FileReader()
-    reader.onload = (uploadEvent) => {
+    try {
+      notify({ type: 'info', message: 'Mengunggah file...' })
+
+      // 1. Upload file beneran ke server Dify pakai fungsi yang baru kita buat
+      const res: any = await sendFile(file)
+
+      // 2. Ambil ID resmi dari server Dify
       const fileRecord = {
-        id: Date.now().toString(),
+        id: res.id,
         type: file.type.startsWith('image') ? 'image' : 'document',
-        url: uploadEvent.target?.result as string,
         transfer_method: 'local_file',
-        upload_file_id: '',
+        url: res.url || URL.createObjectURL(file),
+        upload_file_id: res.id, // <--- INI KUNCINYA SUPAYA TIDAK ERROR 400
       } as unknown as VisionFile
 
       setSelectedFiles([fileRecord])
       notify({ type: 'success', message: 'File berhasil dilampirkan!' })
+    } catch (error) {
+      console.error(error)
+      notify({ type: 'error', message: 'Gagal mengunggah file.' })
     }
-    reader.readAsDataURL(file)
   }
 
   const handleSend = () => {
