@@ -9,7 +9,8 @@ import { atelierHeathLight } from 'react-syntax-highlighter/dist/esm/styles/hljs
 
 export function Markdown(props: { content: string }) {
   return (
-    <div className="markdown-body">
+    // Kelas text-slate-100 sudah ditambahkan di sini
+    <div className="markdown-body text-slate-100 !bg-transparent">
       <ReactMarkdown
         remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
         rehypePlugins={[
