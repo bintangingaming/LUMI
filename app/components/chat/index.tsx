@@ -46,6 +46,9 @@ const Chat: FC<IChatProps> = ({
   const [query, setQuery] = React.useState('')
   const queryRef = useRef('')
 
+  // State lokal untuk menampung file yang dipilih
+  const [selectedFiles, setSelectedFiles] = React.useState<VisionFile[]>([])
+
   const handleContentChange = (e: any) => {
     const value = e.target.value
     setQuery(value)
@@ -58,7 +61,7 @@ const Chat: FC<IChatProps> = ({
 
   const valid = () => {
     const query = queryRef.current
-    if (!query || query.trim() === '') {
+    if ((!query || query.trim() === '') && selectedFiles.length === 0) {
       logError(t('app.errorMessage.valueOfVarRequired'))
       return false
     }
@@ -69,17 +72,46 @@ const Chat: FC<IChatProps> = ({
     if (controlClearQuery) {
       setQuery('')
       queryRef.current = ''
+      setSelectedFiles([])
     }
   }, [controlClearQuery])
+
+  // Handler ketika file dipilih dari komputer
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) { return }
+
+    const file = files[0]
+
+    const reader = new FileReader()
+    reader.onload = (uploadEvent) => {
+      const fileRecord = {
+        id: Date.now().toString(),
+        type: file.type.startsWith('image') ? 'image' : 'document',
+        url: uploadEvent.target?.result as string,
+        transfer_method: 'local_file',
+        upload_file_id: '',
+      } as unknown as VisionFile
+
+      setSelectedFiles([fileRecord])
+      notify({ type: 'success', message: 'File berhasil dilampirkan!' })
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleSend = () => {
     if (!valid() || (checkCanSend && !checkCanSend())) { return }
 
-    onSend(queryRef.current, [])
+    // Kirim query beserta file yang dipilih ke onSend
+    onSend(queryRef.current, selectedFiles)
 
     if (!isResponding) {
       setQuery('')
       queryRef.current = ''
+      setSelectedFiles([])
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -106,7 +138,6 @@ const Chat: FC<IChatProps> = ({
     handleSend()
   }
 
-  // Handler opsional ketika ikon klip kertas diklik
   const handleAttachClick = () => {
     fileInputRef.current?.click()
   }
@@ -139,11 +170,28 @@ const Chat: FC<IChatProps> = ({
         })}
       </div>
 
-      {/* Input Box: Angka 0 Dihapus & Tombol Klip Kertas Ditambahkan */}
+      {/* Input Box */}
       {
         !isHideSendInput && (
           <div className='fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 pc:ml-[122px] tablet:ml-[96px] mobile:ml-0 pc:w-[794px] tablet:w-[794px] max-w-full mobile:w-full px-3.5 pb-4'>
             <div className='p-[5.5px] max-h-[150px] bg-slate-900/80 backdrop-blur-xl border-[1.5px] border-slate-700/80 rounded-xl overflow-y-auto shadow-2xl transition-all relative'>
+
+              {/* Indikator File Terpilih */}
+              {selectedFiles.length > 0 && (
+                <div className="flex items-center gap-2 px-3 pt-2 text-xs text-indigo-400">
+                  <span>📎 File dilampirkan: {(selectedFiles[0] as any).file?.name || 'File terpilih'}</span>
+                  <button
+                    onClick={() => {
+                      setSelectedFiles([])
+                      if (fileInputRef.current) { fileInputRef.current.value = '' }
+                    }}
+                    className="text-red-400 hover:text-red-300 font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               <Textarea
                 className='block w-full px-3 pr-[88px] py-[7px] leading-5 max-h-none text-base text-slate-100 placeholder-slate-400 bg-transparent outline-none appearance-none resize-none'
                 value={query}
@@ -159,10 +207,7 @@ const Chat: FC<IChatProps> = ({
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
-                onChange={(e) => {
-                  // Tambahkan logika handle file lokal di sini jika diperlukan
-                  console.log(e.target.files)
-                }}
+                onChange={handleFileChange}
               />
 
               <div className="absolute bottom-2 right-4 flex items-center space-x-2 h-8">

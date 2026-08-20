@@ -26,13 +26,14 @@ export default function EditProfileModal({
   const [username, setUsername] = useState(profile?.username || '')
   const [grade, setGrade] = useState(profile?.grade || '')
 
+  // 🔄 Update nilai form setiap kali modal dibuka (isOpen bernilai true) atau profile berubah
   useEffect(() => {
-    if (profile) {
+    if (isOpen && profile) {
       setDisplayName(profile.displayName || '')
       setUsername(profile.username || '')
       setGrade(profile.grade || '')
     }
-  }, [profile])
+  }, [isOpen, profile])
 
   if (!isOpen) { return null }
 
