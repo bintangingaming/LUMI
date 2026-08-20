@@ -3,7 +3,7 @@ import 'katex/dist/katex.min.css'
 import RemarkMath from 'remark-math'
 import RemarkBreaks from 'remark-breaks'
 import RehypeKatex from 'rehype-katex'
-import RemarkGfm from 'remark-gfm'
+// RemarkGfm dihapus karena bikin error 'inTable'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { atelierHeathLight } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
@@ -11,7 +11,8 @@ export function Markdown(props: { content: string }) {
   return (
     <div className="markdown-body">
       <ReactMarkdown
-        remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
+        // Hapus RemarkGfm dari sini
+        remarkPlugins={[RemarkMath, RemarkBreaks]}
         rehypePlugins={[RehypeKatex]}
         components={{
           code({ node, inline, className, children, ...props }) {
