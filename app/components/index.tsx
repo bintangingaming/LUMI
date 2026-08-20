@@ -417,6 +417,12 @@ const Main: FC<IMainProps> = () => {
       })
     }
 
+    const data: Record<string, any> = {
+      inputs: toServerInputs,
+      query: message,
+      conversation_id: isNewConversation ? null : currConversationId,
+    }
+
     if (files && files?.length > 0) {
       data.files = files.map((item) => {
         if (item.transfer_method === TransferMethod.local_file) {
