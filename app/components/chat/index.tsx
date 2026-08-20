@@ -103,7 +103,7 @@ const Chat: FC<IChatProps> = ({
     if (!valid() || (checkCanSend && !checkCanSend())) { return }
 
     // Kirim pesan teks dengan file kosong [] agar tidak ditolak backend (Error 400)
-    onSend(queryRef.current, [])
+    onSend(queryRef.current, selectedFiles)
 
     if (!isResponding) {
       setQuery('')
