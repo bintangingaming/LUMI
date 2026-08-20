@@ -2,6 +2,7 @@
 import type { FC } from 'react'
 import React, { useState } from 'react'
 import { XMarkIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
+import { supabase } from '@/lib/supabase' // <-- 1. Import supabase client
 
 export interface IAuthModalProps {
   isOpen: boolean
@@ -10,8 +11,50 @@ export interface IAuthModalProps {
 
 const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
 
   if (!isOpen) return null
+
+  // 2. Fungsi Login dengan Google via Supabase
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      })
+      if (error) throw error
+    } catch (error: any) {
+      console.error("Gagal login Google:", error.message)
+      alert("Gagal login: " + error.message)
+    }
+  }
+
+  // 3. Fungsi Login dengan Magic Link (Email) via Supabase
+  const handleEmailLogin = async () => {
+    if (!email) {
+      alert("Masukkan email terlebih dahulu!")
+      return
+    }
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      })
+      if (error) throw error
+      alert(`Link login telah dikirim ke ${email}. Cek inbox/spam email kamu ya!`)
+      onClose()
+    } catch (error: any) {
+      console.error("Gagal kirim email:", error.message)
+      alert("Gagal: " + error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
@@ -48,10 +91,11 @@ const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <button
-            onClick={() => alert(`Mengirim link login ke: ${email}`)}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-blue-600/20"
+            onClick={handleEmailLogin}
+            disabled={loading}
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50"
           >
-            Kirim Link Login via Email
+            {loading ? 'Mengirim...' : 'Kirim Link Login via Email'}
           </button>
         </div>
 
@@ -64,7 +108,7 @@ const AuthModal: FC<IAuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* Tombol Google */}
         <button
-          onClick={() => alert('Login dengan Google diklik!')}
+          onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium text-sm rounded-xl border border-slate-700 transition-all"
         >
           {/* Logo Google SVG */}
