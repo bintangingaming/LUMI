@@ -12,7 +12,7 @@ import type { FeedbackFunc } from './type'
 import type { ChatItem, VisionFile, VisionSettings } from '@/types/app'
 import Tooltip from '@/app/components/base/tooltip'
 import Toast from '@/app/components/base/toast'
-import { sendFile } from '@/service' // Sesuaikan path foldernya jika berbeda
+import { sendFiles } from '@/service' // Sesuaikan path foldernya jika berbeda
 
 export interface IChatProps {
   chatList: ChatItem[]
@@ -86,16 +86,15 @@ const Chat: FC<IChatProps> = ({
     try {
       notify({ type: 'info', message: 'Mengunggah file...' })
 
-      // 1. Upload file beneran ke server Dify pakai fungsi yang baru kita buat
-      const res: any = await sendFile(file)
+      // Upload ke endpoint file-upload via XMLHttpRequest bawaan base.ts
+      const res: any = await sendFiles({ file })
 
-      // 2. Ambil ID resmi dari server Dify
       const fileRecord = {
         id: res.id,
         type: file.type.startsWith('image') ? 'image' : 'document',
         transfer_method: 'local_file',
-        url: res.url || URL.createObjectURL(file),
-        upload_file_id: res.id, // <--- INI KUNCINYA SUPAYA TIDAK ERROR 400
+        url: URL.createObjectURL(file),
+        upload_file_id: res.id,
       } as unknown as VisionFile
 
       setSelectedFiles([fileRecord])

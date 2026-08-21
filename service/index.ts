@@ -1,5 +1,5 @@
 import type { IOnCompleted, IOnData, IOnError, IOnFile, IOnMessageEnd, IOnMessageReplace, IOnNodeFinished, IOnNodeStarted, IOnThought, IOnWorkflowFinished, IOnWorkflowStarted } from './base'
-import { get, post, ssePost } from './base'
+import { get, post, ssePost, upload } from './base'
 import type { Feedbacktype } from '@/types/app'
 
 export const sendChatMessage = async (
@@ -61,12 +61,12 @@ export const generationConversationName = async (id: string) => {
   return post(`conversations/${id}/name`, { body: { auto_generate: true } })
 }
 
-// Fungsi baru untuk mengunggah file/gambar ke endpoint Dify
-export const sendFile = async (file: File) => {
+// Fungsi upload file menggunakan endpoint bawaan Dify (file-upload)
+export const sendFiles = ({ file, onprogress }: { file: File, onprogress?: (e: ProgressEvent) => void }) => {
   const formData = new FormData()
   formData.append('file', file)
-
-  return post('files', {
-    body: formData,
+  return upload({
+    data: formData,
+    onprogress,
   })
 }
