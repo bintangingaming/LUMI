@@ -1,6 +1,7 @@
 import type { IOnCompleted, IOnData, IOnError, IOnFile, IOnMessageEnd, IOnMessageReplace, IOnNodeFinished, IOnNodeStarted, IOnThought, IOnWorkflowFinished, IOnWorkflowStarted } from './base'
-import { get, post, ssePost, upload } from './base'
+import { get, post, ssePost } from './base'
 import type { Feedbacktype } from '@/types/app'
+import { API_PREFIX } from '@/config'
 
 export const sendChatMessage = async (
   body: Record<string, any>,
@@ -61,12 +62,22 @@ export const generationConversationName = async (id: string) => {
   return post(`conversations/${id}/name`, { body: { auto_generate: true } })
 }
 
-// Fungsi upload file menggunakan endpoint bawaan Dify (file-upload)
-export const sendFiles = ({ file, onprogress }: { file: File, onprogress?: (e: ProgressEvent) => void }) => {
+// Fungsi upload file yang baru menggunakan fetch API standar (aman & tidak error 'open')
+export const sendFiles = async ({ file }: { file: File }) => {
   const formData = new FormData()
   formData.append('file', file)
-  return upload({
-    data: formData,
-    onprogress,
+
+  const urlPrefix = API_PREFIX
+  const response = await globalThis.fetch(`${urlPrefix}/file-upload`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include', // Mengikuti konfigurasi cookie/auth base.ts
   })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Gagal mengunggah file')
+  }
+
+  return response.json()
 }
