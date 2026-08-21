@@ -71,13 +71,23 @@ export const sendFiles = async ({ file }: { file: File }) => {
   const response = await globalThis.fetch(`${urlPrefix}/file-upload`, {
     method: 'POST',
     body: formData,
-    credentials: 'include', // Mengikuti konfigurasi cookie/auth base.ts
+    credentials: 'include',
   })
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || 'Gagal mengunggah file')
+    const errorText = await response.text().catch(() => '')
+    throw new Error(errorText || 'Gagal mengunggah file')
   }
 
-  return response.json()
+  // Ambil respon sebagai teks dulu untuk mencegah error JSON parsing
+  const textResponse = await response.text()
+
+  try {
+    // Coba parse ke JSON kalau bentuknya JSON
+    const json = JSON.parse(textResponse)
+    return json
+  } catch {
+    // Kalau server cuma balikin string ID mentah, bungkus jadi objek
+    return { id: textResponse }
+  }
 }
