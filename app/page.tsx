@@ -3,7 +3,8 @@ import type { FC } from 'react'
 import React, { useState } from 'react'
 
 import type { IMainProps } from '@/app/components'
-import Main from '@/app/components' // <-- Kita aktifkan lagi import-nya
+// Import Main kita comment dulu karena udah diganti UI kustom yang lebih lega
+// import Main from '@/app/components' 
 import AuthModal from '@/app/components/AuthModal'
 import EditProfileModal from '@/app/components/EditProfileModal'
 
@@ -64,7 +65,7 @@ const App: FC<IMainProps> = ({ params }: any) => {
         {activeTab === 'chat' && (
           <>
             {/* Bagian Kiri/Tengah Chat */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900 rounded-tl-3xl shadow-2xl relative">
+            <div className="flex-1 flex flex-col overflow-hidden bg-[#1a1d24] relative">
               
               {/* Jika Persona belum dipilih, tampilkan grid kartunya */}
               {!selectedPersona ? (
@@ -103,16 +104,74 @@ const App: FC<IMainProps> = ({ params }: any) => {
                   </div>
                 </div>
               ) : (
-                /* Jika Persona SUDAH DIPILIH, tampilkan Komponen AI aslimu */
-                <Main
-                  params={params}
-                  onOpenEditProfile={() => setIsEditProfileOpen(true)}
-                />
+                
+                /* === UI CHAT BARU (LEBIH LEGA & BERSIH) === */
+                <div className="flex-1 flex flex-col bg-[#1a1d24] relative h-full">
+                  
+                  {/* Header Chat */}
+                  <div className="h-[72px] border-b border-slate-800 flex items-center px-8 bg-[#161922] shrink-0">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">
+                        {selectedPersona === 'tutor' ? '🤓' : selectedPersona === 'konsul' ? '🧐' : selectedPersona === 'motivator' ? '🔥' : '🌍'}
+                      </span>
+                      <div>
+                        <h2 className="font-bold text-slate-200">
+                          LUMI {selectedPersona.charAt(0).toUpperCase() + selectedPersona.slice(1)}
+                        </h2>
+                        <p className="text-xs text-slate-500">Selalu siap bantu kamu belajar</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Area Obrolan (Messages) */}
+                  <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                    {/* Pesan Pembuka dari AI */}
+                    <div className="flex gap-4 max-w-3xl">
+                      <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500 flex items-center justify-center shrink-0 text-xl">
+                        {selectedPersona === 'tutor' ? '🤓' : selectedPersona === 'konsul' ? '🧐' : selectedPersona === 'motivator' ? '🔥' : '🌍'}
+                      </div>
+                      <div className="bg-[#232732] border border-slate-700 p-4 rounded-2xl rounded-tl-none text-slate-300 leading-relaxed shadow-sm">
+                        Halo Bintang! Aku LUMI {selectedPersona.charAt(0).toUpperCase() + selectedPersona.slice(1)}. Yuk belajar bareng! Mau bahas materi UTBK apa hari ini?
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Input Chat Bawah (Floating) */}
+                  <div className="p-6 bg-gradient-to-t from-[#161922] to-transparent shrink-0">
+                    <div className="max-w-4xl mx-auto">
+                      <div className="bg-[#232732] border border-slate-700 focus-within:border-indigo-500 transition-colors rounded-2xl p-2 flex items-end shadow-lg">
+                        
+                        <button className="p-3 text-slate-400 hover:text-indigo-400 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                          </svg>
+                        </button>
+
+                        <textarea 
+                          rows={1}
+                          className="flex-1 bg-transparent outline-none text-slate-200 px-4 py-3 resize-none max-h-32" 
+                          placeholder="Tanya LUMI tentang TKA SMA/SMK..." 
+                        />
+                        
+                        <button className="p-3 m-1 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <p className="text-center text-[10px] text-slate-500 mt-3">
+                        LUMI ditenagai AI dan bisa keliru. Periksa kembali informasi penting, bukan pengganti guru sungguhan.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
               )}
             </div>
 
             {/* Bagian Sidebar Kanan (Selalu Muncul di tab Chat) */}
-            <div className="w-80 bg-[#1b1f27] border-l border-slate-800 p-5 flex flex-col shrink-0">
+            <div className="w-80 bg-[#1b1f27] border-l border-slate-800 p-5 flex flex-col shrink-0 z-10">
               <button onClick={handleNewChat} className="w-full bg-[#fce04a] hover:bg-[#f5d427] text-black font-bold py-3.5 rounded-xl mb-6 transition-colors flex items-center justify-center gap-2">
                 <span className="text-xl">+</span> Chat Baru
               </button>
